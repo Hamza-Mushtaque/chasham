@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "11290112003",
+    "project_id": "chasham-fyp",
+    "storage_bucket": "chasham-fyp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11290112003:android:6a1455c78750e3c5c01e36",
+        "android_client_info": {
+          "package_name": "com.example.chasham_fyp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "11290112003-6tak1di2q8adj8622k50vfgm8g7ip5hm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK2QDWSCOGjT00LINsFTgFL34XOdlJd1s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "11290112003-6tak1di2q8adj8622k50vfgm8g7ip5hm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "11290112003-duimronf17s5chodfpirs28j774k97ed.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.chasham"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11290112003:android:1fd784b763c885a4c01e36",
+        "android_client_info": {
+          "package_name": "com.mycompany.chasham"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "11290112003-6tak1di2q8adj8622k50vfgm8g7ip5hm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK2QDWSCOGjT00LINsFTgFL34XOdlJd1s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "11290112003-6tak1di2q8adj8622k50vfgm8g7ip5hm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "11290112003-duimronf17s5chodfpirs28j774k97ed.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.chasham"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
