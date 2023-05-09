@@ -3,6 +3,7 @@ import 'package:chasham_fyp/screens/home_screen.dart';
 import 'package:chasham_fyp/screens/lesson_complete_screen.dart';
 import 'package:chasham_fyp/screens/lessons_table_screen.dart';
 import 'package:chasham_fyp/screens/letter_lesson_screen.dart';
+import 'package:chasham_fyp/screens/letters_upload_screen.dart';
 import 'package:chasham_fyp/screens/login_screen.dart';
 import 'package:chasham_fyp/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,8 @@ class MyApp extends StatelessWidget {
         '/dashboard': (context) => DashboardScreen(),
         '/lessons': (context) => LessonTableScreen(),
         '/lesson/1': (context) => LetterLessonScreen(),
-        '/complete': (context) => LessonCompleteScreen()
+        '/complete': (context) => LessonCompleteScreen(),
+        '/upload': (context) => LetterUploadScreen()
       },
       theme: ThemeData(
         colorScheme: const ColorScheme(
