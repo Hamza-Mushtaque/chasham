@@ -1,4 +1,5 @@
 import 'package:chasham_fyp/screens/dashboard_screen.dart';
+import 'package:chasham_fyp/screens/first_time_screen.dart';
 import 'package:chasham_fyp/screens/home_screen.dart';
 import 'package:chasham_fyp/screens/lesson_complete_screen.dart';
 import 'package:chasham_fyp/screens/lessons_table_screen.dart';
@@ -33,7 +34,8 @@ class MyApp extends StatelessWidget {
         '/dashboard': (context) => DashboardScreen(),
         '/lessons': (context) => LessonTableScreen(),
         '/lesson/1': (context) => LetterLessonScreen(),
-        '/complete': (context) => LessonCompleteScreen()
+        '/complete': (context) => LessonCompleteScreen(),
+        '/firsttimescreen': (context) => FirstTimeScreen()
       },
       theme: ThemeData(
         colorScheme: const ColorScheme(

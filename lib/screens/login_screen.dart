@@ -1,9 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
+import '../models/user_model.dart';
 
 
 
@@ -16,38 +19,61 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn googleSignIn = GoogleSignIn();
+final GoogleSignIn googleSignIn = GoogleSignIn();
+final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  Future<void> _signInWithGoogle() async {
-    try {
-      // Trigger the Google Authentication flow.
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+Future<void> _signInWithGoogle() async {
+  try {
+    // Trigger the Google Authentication flow.
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-      if (googleUser != null) {
-        // Obtain the GoogleAuthentication object.
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+    if (googleUser != null) {
+      // Obtain the GoogleAuthentication object.
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
-        // Create a new Firebase credential with the Google tokens.
-        final credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
+      // Create a new Firebase credential with the Google tokens.
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google credential.
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      final User? user = userCredential.user;
+      
+      // Check if this is the first time the user is logging in
+      final bool isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+      if (isNewUser) {
+        // Create a new instance of the User model with data from the Google account
+        final UserModel newUser = UserModel(
+          name: user?.displayName ?? '',
+          dateOfBirth: null,
+          profileImage: user?.photoURL ?? '',
         );
 
-        // Sign in to Firebase with the Google credential.
-        await _auth.signInWithCredential(credential);
+        // Save the new user instance to Firestore
+        await FirebaseFirestore.instance.collection('users').doc(user?.uid).set(newUser.toJson());
 
-        // Navigate to home screen after successful login.
-        Navigator.pushReplacementNamed(context, '/home');
+        // Navigate to the first time screen after successful login.
+        Navigator.pushReplacementNamed(context, '/firsttimescreen');
+      } else {
+        // Navigate to dashboard screen as user is already signed in.
+        Navigator.pushReplacementNamed(context, '/dashboard');
       }
-    } catch (error) {
-      // Handle sign-in errors such as user canceling the sign-in flow
-      print('Error signing in with Google: $error');
     }
+  } catch (error) {
+    // Handle sign-in errors such as user canceling the sign-in flow
+    ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(
+      content: Text('Error signing in with Google: $error'),
+    ));
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
         body: Container(
       // decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary),
       width: double.infinity,
@@ -83,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Google sign-in button
                 GestureDetector(
-                  onTap:  _signInWithGoogle,
+                  onTap: _signInWithGoogle,
                   child: Container(
                     width: 284,
                     decoration: BoxDecoration(
