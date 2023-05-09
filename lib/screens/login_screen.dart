@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen();
@@ -10,9 +15,34 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  void _handleLogin() {
-    // Handle login logic here
-    Navigator.pushNamed(context, '/dashboard');
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn googleSignIn = GoogleSignIn();
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      // Trigger the Google Authentication flow.
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser != null) {
+        // Obtain the GoogleAuthentication object.
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+        // Create a new Firebase credential with the Google tokens.
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+
+        // Sign in to Firebase with the Google credential.
+        await _auth.signInWithCredential(credential);
+
+        // Navigate to home screen after successful login.
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } catch (error) {
+      // Handle sign-in errors such as user canceling the sign-in flow
+      print('Error signing in with Google: $error');
+    }
   }
 
   @override
@@ -53,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Google sign-in button
                 GestureDetector(
-                  onTap: _handleLogin,
+                  onTap:  _signInWithGoogle,
                   child: Container(
                     width: 284,
                     decoration: BoxDecoration(
