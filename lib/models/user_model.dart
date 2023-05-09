@@ -16,7 +16,8 @@ class UserModel {
   Map<String, dynamic> toJson() {
     return {
       'name': name,
-      'dateOfBirth': dateOfBirth!.toIso8601String(),
+      'dateOfBirth':
+          dateOfBirth == null ? null : dateOfBirth!.toIso8601String(),
       'profileImage': profileImage,
     };
   }

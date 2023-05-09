@@ -4,6 +4,7 @@ import 'package:chasham_fyp/screens/home_screen.dart';
 import 'package:chasham_fyp/screens/lesson_complete_screen.dart';
 import 'package:chasham_fyp/screens/lessons_table_screen.dart';
 import 'package:chasham_fyp/screens/letter_lesson_screen.dart';
+import 'package:chasham_fyp/screens/letters_upload_screen.dart';
 import 'package:chasham_fyp/screens/login_screen.dart';
 import 'package:chasham_fyp/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -12,12 +13,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-);
+  );
 
   runApp(MyApp());
 }
@@ -35,6 +35,7 @@ class MyApp extends StatelessWidget {
         '/lessons': (context) => LessonTableScreen(),
         '/lesson/1': (context) => LetterLessonScreen(),
         '/complete': (context) => LessonCompleteScreen(),
+        '/upload': (context) => LetterUploadScreen(),
         '/firsttimescreen': (context) => FirstTimeScreen()
       },
       theme: ThemeData(

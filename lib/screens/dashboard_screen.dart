@@ -168,7 +168,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                           link: '/tests')
                     ],
                   ),
-                )
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/upload');
+                    },
+                    child: const Text('Go To Upload',
+                        style: TextStyle(fontSize: 18, color: Colors.white)))
               ],
             )),
       )),
