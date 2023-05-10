@@ -8,7 +8,9 @@ class UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       name: json['name'],
-      dateOfBirth: DateTime.parse(json['dateOfBirth']),
+      dateOfBirth: json['dateOfBirth'] == null
+          ? null
+          : DateTime.parse(json['dateOfBirth'].toDate().toString()),
       profileImage: json['profileImage'],
     );
   }
