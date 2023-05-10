@@ -1,158 +1,253 @@
+import 'dart:io';
+import 'package:path/path.dart' as path;
+import 'package:chasham_fyp/models/letter_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 class LetterUploadScreen extends StatefulWidget {
-  const LetterUploadScreen({Key? key}) : super(key: key);
-
   @override
   _LetterUploadScreenState createState() => _LetterUploadScreenState();
 }
 
 class _LetterUploadScreenState extends State<LetterUploadScreen> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _letterController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _brailleController = TextEditingController();
-  PlatformFile? _audioFile;
-  String? _selectedDropdownOption;
-  String? _selectedFile;
+  final _formKey = GlobalKey<FormState>();
+  late int _serialNo;
+  late String _letter;
+  late String _braille;
+  late String _description;
+  File? _testAudioFile;
+  File? _lessonAudioFile;
+  late String _selectedDropDownOption;
 
-  void _handleFilePicker() async {
+  final List<String> _dropDownOptions = ['1 letter', '2 letter'];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDropDownOption = _dropDownOptions[0];
+  }
+
+  Future<void> _handleTestAudioFileSelection() async {
     final result = await FilePicker.platform.pickFiles(type: FileType.audio);
     if (result != null) {
       setState(() {
-        _audioFile = result.files.single;
+        _testAudioFile = File(result.files.single.path!);
       });
     }
   }
 
-  List<String> _dropdownOptions = ['1 letter', '2 letters'];
-
-  @override
-  void dispose() {
-    _letterController.dispose();
-    _descriptionController.dispose();
-    _brailleController.dispose();
-    super.dispose();
+  Future<void> _handleLessonAudioFileSelection() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.audio);
+    if (result != null) {
+      setState(() {
+        _lessonAudioFile = File(result.files.single.path!);
+      });
+    }
   }
 
-  void _onFormSubmitted() {
+  void _onFormSubmitted() async {
     if (_formKey.currentState!.validate()) {
-      final letter = _letterController.text;
-      final description = _descriptionController.text;
-      final braille = _brailleController.text;
-      final option = _selectedDropdownOption;
-      final audioPath = _audioFile;
+      _formKey.currentState!.save();
 
-      print('Letter: $letter');
-      print('Description: $description');
-      print('Braille: $braille');
-      print('Option: $option');
-      print('Audio Path: $audioPath');
+      final letterModel = LetterModel(
+        serialNo: _serialNo,
+        letter: _letter,
+        braille: _braille,
+        description: _description,
+        testAudioPath:
+            _testAudioFile != null ? await uploadFile(_testAudioFile!) : "",
+        lessonAudioPath:
+            _lessonAudioFile != null ? await uploadFile(_lessonAudioFile!) : "",
+        letterType: _selectedDropDownOption,
+      );
+
+      try {
+        await FirebaseFirestore.instance
+            .collection('letters')
+            .add(letterModel.toJson());
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+            'Letter uploaded successfully!',
+            style: TextStyle(color: Colors.green),
+          )),
+        );
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Error uploading letter: $error',
+                  style: TextStyle(color: Colors.red))),
+        );
+      }
+    }
+  }
+
+  Future<String> uploadFile(File file) async {
+    try {
+      String fileName = path.basename(file.path);
+      Reference ref =
+          FirebaseStorage.instance.ref().child("letters/$_serialNo/$fileName");
+      UploadTask uploadTask = ref.putFile(file);
+      TaskSnapshot taskSnapshot = await uploadTask;
+      return await taskSnapshot.ref.getDownloadURL();
+    } catch (e) {
+      print(e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error uploading letter: $e')),
+      );
+      throw Exception('Failed to upload file.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Upload Letter'),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextFormField(
-                  controller: _letterController,
-                  decoration: const InputDecoration(
-                    labelText: 'Letter',
-                    hintText: 'Enter letter',
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a letter.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                    hintText: 'Enter description',
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a description.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _brailleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Braille',
-                    hintText: 'Enter braille',
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a braille.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: _selectedDropdownOption,
-                  decoration: const InputDecoration(
-                    labelText: 'Select letter type',
-                    hintText: 'Select letter type',
-                  ),
-                  items: _dropdownOptions
-                      .map((option) => DropdownMenuItem<String>(
-                            value: option,
-                            child: Text(option),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedDropdownOption = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    _handleFilePicker();
-                  },
-                  child: const Text('Upload Audio File'),
-                ),
-                const SizedBox(height: 16),
-                if (_selectedFile != null)
-                  Text(
-                    'Selected file: $_selectedFile',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _onFormSubmitted,
-                  child: const Text('Submit'),
-                ),
-              ],
-            ),
-          ),
+        appBar: AppBar(
+          title: Text('Letter Upload'),
         ),
-      ),
-    );
+        body: SingleChildScrollView(
+            child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                    key: _formKey,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TextFormField(
+                            decoration:
+                                InputDecoration(labelText: 'Serial No.'),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a letter';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _serialNo = int.parse(value!);
+                            },
+                          ),
+                          SizedBox(height: 16.0),
+                          TextFormField(
+                            decoration: InputDecoration(labelText: 'Letter'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a letter';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _letter = value!;
+                            },
+                          ),
+                          SizedBox(height: 16.0),
+                          TextFormField(
+                            decoration: InputDecoration(labelText: 'Braille'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter braille';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _braille = value!;
+                            },
+                          ),
+                          SizedBox(height: 16.0),
+                          TextFormField(
+                            decoration:
+                                InputDecoration(labelText: 'Description'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a description';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _description = value!;
+                            },
+                          ),
+                          SizedBox(height: 16.0),
+                          DropdownButtonFormField<String>(
+                            value: _selectedDropDownOption,
+                            decoration: const InputDecoration(
+                              labelText: 'Select letter type',
+                              hintText: 'Select letter type',
+                            ),
+                            items: _dropDownOptions
+                                .map((option) => DropdownMenuItem<String>(
+                                      value: option,
+                                      child: Text(option),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedDropDownOption = value!;
+                              });
+                            },
+                          ),
+                          SizedBox(height: 16.0),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: Text('Test Audio'),
+                              ),
+                              SizedBox(width: 16.0),
+                              Expanded(
+                                flex: 3,
+                                child: ElevatedButton(
+                                  onPressed: _handleTestAudioFileSelection,
+                                  child: Text('Select File'),
+                                ),
+                              ),
+                              SizedBox(width: 16.0),
+                              Expanded(
+                                flex: 5,
+                                child: Text(
+                                  _testAudioFile?.path ?? 'No file selected',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.0),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: Text('Lesson Audio'),
+                              ),
+                              SizedBox(width: 16.0),
+                              Expanded(
+                                flex: 3,
+                                child: ElevatedButton(
+                                  onPressed: _handleLessonAudioFileSelection,
+                                  child: Text('Select File'),
+                                ),
+                              ),
+                              SizedBox(width: 16.0),
+                              Expanded(
+                                flex: 5,
+                                child: Text(
+                                  _lessonAudioFile?.path ?? 'No file selected',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              _onFormSubmitted();
+                            },
+                            child: const Text('Submit'),
+                          ),
+                        ])))));
   }
 }
