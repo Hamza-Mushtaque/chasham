@@ -1,7 +1,12 @@
 import 'package:chasham_fyp/models/user_model.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+import 'package:intl/intl.dart';
+import 'package:path/path.dart' as path;
 
 class FirstTimeScreen extends StatefulWidget {
   @override
@@ -15,6 +20,7 @@ class _FirstTimeScreenState extends State<FirstTimeScreen> {
   String _userName = '';
   DateTime? _userDob;
   String _profileImgUrl = '';
+  bool _imgUpdated = false;
 
   Future<void> _get_user() async {
     final userDoc = await FirebaseFirestore.instance
@@ -32,10 +38,52 @@ class _FirstTimeScreenState extends State<FirstTimeScreen> {
     print('After User Setting');
   }
 
+  Future<void> _uploadImageFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(type: FileType.image);
+      if (result != null) {
+        final file = File(result.files.single.path!);
+        String fileName = path.basename(file.path);
+        Reference ref = FirebaseStorage.instance.ref().child(
+            "profile-pics/${FirebaseAuth.instance.currentUser!.uid}/$fileName");
+        UploadTask uploadTask = ref.putFile(file);
+        TaskSnapshot taskSnapshot = await uploadTask;
+
+        setState(() {
+          _imgUpdated = true;
+        });
+
+        String imageUrl = await taskSnapshot.ref.getDownloadURL();
+        setState(() {
+          _profileImgUrl = imageUrl;
+        });
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'File Uploaded Successfully',
+            style: TextStyle(color: Colors.greenAccent),
+          ),
+        ),
+      );
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Error uploading Files: $e',
+            style: TextStyle(color: Colors.red),
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _user!.dateOfBirth ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
       builder: (BuildContext context, Widget? child) {
@@ -56,6 +104,10 @@ class _FirstTimeScreenState extends State<FirstTimeScreen> {
         _dateController.text = _userDob!
             .toString(); // Update the text field with the selected date
       });
+    } else {
+      setState(() {
+        _userDob = DateTime.now();
+      });
     }
   }
 
@@ -65,15 +117,46 @@ class _FirstTimeScreenState extends State<FirstTimeScreen> {
     _get_user();
   }
 
-  // void _saveUserData() {
-  //   print("error in 3");
-  //   // Save the user data to Firestore.
-  //   _db.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).set({
-  //     'name': _name.trim(),
-  //     'dob': _dobController.text.trim(),
-  //     'profileImageUrl': user.profileImage,
-  //   });
-  // }
+  Future<void> _saveUserData() async {
+    try {
+      // Update name
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .update({'name': _userName});
+
+      // Update profile image URL
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .update({'profileImage': _profileImgUrl});
+
+      // Update date of birth
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .update({'dateOfBirth': _userDob});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'User data saved successfully',
+            style: TextStyle(color: Colors.greenAccent),
+          ),
+        ),
+      );
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Error saving user data: $e',
+            style: TextStyle(color: Colors.red),
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,13 +174,19 @@ class _FirstTimeScreenState extends State<FirstTimeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              backgroundImage: NetworkImage(_user!.profileImage),
-              radius: 50,
+            InkWell(
+              onTap: () {
+                _uploadImageFile();
+              },
+              child: CircleAvatar(
+                backgroundImage: NetworkImage(_profileImgUrl),
+                radius: 50,
+              ),
             ),
+            _imgUpdated ? const Text('* New Image Uploaded') : const Text(''),
             SizedBox(height: 16.0),
             TextFormField(
-              initialValue: _userName,
+              initialValue: _user!.name,
               decoration: InputDecoration(
                 labelText: 'Name',
               ),
@@ -109,22 +198,23 @@ class _FirstTimeScreenState extends State<FirstTimeScreen> {
             ),
             SizedBox(height: 16.0),
             TextFormField(
-              controller: _dateController,
-              readOnly: true, // Prevents manual editing of the text field
+              readOnly: true,
               onTap: () {
-                _selectDate(
-                    context); // Show the date picker when the text field is tapped
+                _selectDate(context);
               },
               decoration: InputDecoration(
                 labelText: 'Date of Birth',
               ),
+              initialValue: _userDob != null
+                  ? DateFormat('yyyy-MM-dd').format(_userDob!)
+                  : '',
             ),
             SizedBox(height: 32.0),
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // _saveUserData();
-                  Navigator.pushReplacementNamed(context, '/dashboard');
+                  _saveUserData();
+                  // Navigator.pushReplacementNamed(context, '/dashboard');
                 },
                 child: Text('Save'),
               ),
