@@ -21,66 +21,67 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   Future<void> _signInWithGoogle() async {
-    try {
-      // Trigger the Google Authentication flow.
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+    // try {
+    //   // Trigger the Google Authentication flow.
+    //   final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-      if (googleUser != null) {
-        // Obtain the GoogleAuthentication object.
-        final GoogleSignInAuthentication googleAuth =
-            await googleUser.authentication;
+    //   if (googleUser != null) {
+    //     // Obtain the GoogleAuthentication object.
+    //     final GoogleSignInAuthentication googleAuth =
+    //         await googleUser.authentication;
 
-        // Create a new Firebase credential with the Google tokens.
-        final credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
+    //     // Create a new Firebase credential with the Google tokens.
+    //     final credential = GoogleAuthProvider.credential(
+    //       accessToken: googleAuth.accessToken,
+    //       idToken: googleAuth.idToken,
+    //     );
 
-        // Sign in to Firebase with the Google credential.
-        final UserCredential userCredential =
-            await _auth.signInWithCredential(credential);
-        final User? user = userCredential.user;
+    //     // Sign in to Firebase with the Google credential.
+    //     final UserCredential userCredential =
+    //         await _auth.signInWithCredential(credential);
+    //     final User? user = userCredential.user;
 
-        print(user);
+    //     print(user);
 
-        // Check if this is the first time the user is logging in
-        final bool isNewUser =
-            userCredential.additionalUserInfo?.isNewUser ?? false;
+    //     // Check if this is the first time the user is logging in
+    //     final bool isNewUser =
+    //         userCredential.additionalUserInfo?.isNewUser ?? false;
 
-        print("NEW: $isNewUser");
-        if (isNewUser) {
-          print("Inside New User");
-          // Create a new instance of the User model with data from the Google account
-          final UserModel newUser = UserModel(
-            name: user?.displayName ?? '',
-            profileImage: user?.photoURL ?? '',
-          );
+    //     print("NEW: $isNewUser");
+    //     if (isNewUser) {
+    //       print("Inside New User");
+    //       // Create a new instance of the User model with data from the Google account
+    //       final UserModel newUser = UserModel(
+    //         name: user?.displayName ?? '',
+    //         profileImage: user?.photoURL ?? '',
+    //       );
 
-          print(newUser);
+    //       print(newUser);
 
-          // Save the new user instance to Firestore
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user?.uid)
-              .set(newUser.toJson());
+    //       // Save the new user instance to Firestore
+    //       await FirebaseFirestore.instance
+    //           .collection('users')
+    //           .doc(user?.uid)
+    //           .set(newUser.toJson());
 
-          // Navigate to the first time screen after successful login.
-          Navigator.pushReplacementNamed(context, '/firsttimescreen');
-        } else {
-          // Navigate to dashboard screen as user is already signed in.
-          Navigator.pushReplacementNamed(context, '/dashboard');
-        }
-      }
-    } catch (error) {
-      print(error);
-      // Handle sign-in errors such as user canceling the sign-in flow
-      ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(
-        content: Text(
-          'Error signing in with Google: $error',
-          style: TextStyle(color: Colors.black),
-        ),
-      ));
-    }
+    //       // Navigate to the first time screen after successful login.
+    //       Navigator.pushReplacementNamed(context, '/firsttimescreen');
+    //     } else {
+    //       // Navigate to dashboard screen as user is already signed in.
+    //       Navigator.pushReplacementNamed(context, '/dashboard');
+    //     }
+    //   }
+    // } catch (error) {
+    //   print(error);
+    //   // Handle sign-in errors such as user canceling the sign-in flow
+    //   ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(
+    //     content: Text(
+    //       'Error signing in with Google: $error',
+    //       style: TextStyle(color: Colors.black),
+    //     ),
+    //   ));
+    // }
+    Navigator.pushReplacementNamed(context, '/dashboard');
   }
 
   @override
