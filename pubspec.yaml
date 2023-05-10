@@ -40,6 +40,18 @@ flutter:
   assets:
     - assets/
 
+    - assets/images/braille-1.png
+    - assets/images/google-icon.png
+    - assets/images/lesson-1.png
+
+    - assets/svgs/complete-img.svg
+    - assets/svgs/exercise-icon.svg
+    - assets/svgs/google-icon.svg
+    - assets/svgs/lesson-icon.svg
+    - assets/svgs/logo-color.svg
+    - assets/svgs/test-icon.svg
+
+
   fonts:
     - family: NooriNastaliq
       fonts:

@@ -165,7 +165,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ComponentBtnWidget(
                           label: 'مشق حل کریں',
                           svgIconPath: 'assets/svgs/test-icon.svg',
-                          link: '/tests')
+                          link: '/practice')
                     ],
                   ),
                 ),
