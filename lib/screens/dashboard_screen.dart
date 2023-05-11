@@ -172,9 +172,19 @@ class _DashboardScreenState extends State<DashboardScreen>
                 const SizedBox(height: 24),
                 ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/upload');
+                      Navigator.pushNamed(context, '/lesson-create');
                     },
-                    child: const Text('Go To Upload',
+                    child: const Text('Create Lesson',
+                        style: TextStyle(fontSize: 18, color: Colors.white))),
+                const SizedBox(
+                  height: 8,
+                  width: 8,
+                ),
+                ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/letter-upload');
+                    },
+                    child: const Text('Upload Letter',
                         style: TextStyle(fontSize: 18, color: Colors.white)))
               ],
             )),

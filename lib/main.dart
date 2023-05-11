@@ -1,3 +1,4 @@
+import 'package:chasham_fyp/screens/create_lesson_screen.dart';
 import 'package:chasham_fyp/screens/dashboard_screen.dart';
 import 'package:chasham_fyp/screens/first_time_screen.dart';
 import 'package:chasham_fyp/screens/home_screen.dart';
@@ -33,11 +34,30 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/dashboard': (context) => DashboardScreen(),
         '/lessons': (context) => LessonTableScreen(),
-        '/lesson/1': (context) => LetterLessonScreen(),
+        '/lesson': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments
+              as Map<String, dynamic>?;
+          final lessonId = args?['id'] as String?;
+          return LetterLessonScreen(lessonId: lessonId);
+        },
         '/complete': (context) => LessonCompleteScreen(),
-        '/upload': (context) => LetterUploadScreen(),
+        '/letter-upload': (context) => LetterUploadScreen(),
+        '/lesson-create': (context) => CreateLessonScreen(),
         '/firsttimescreen': (context) => FirstTimeScreen()
       },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/lesson') {
+          // Extract the lesson ID from settings.arguments
+          final String? lessonId = settings.arguments as String?;
+
+          // Pass the lesson ID to LetterLessonScreen
+          return MaterialPageRoute(
+            builder: (context) => LetterLessonScreen(lessonId: lessonId),
+          );
+        }
+        return null;
+      },
+
       theme: ThemeData(
         colorScheme: const ColorScheme(
             brightness: Brightness.light,

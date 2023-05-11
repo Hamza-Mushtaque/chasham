@@ -65,11 +65,11 @@ class _LoginScreenState extends State<LoginScreen> {
               .set(newUser.toJson());
 
           // Navigate to the first time screen after successful login.
-          Navigator.pushNamed(context, '/firsttimescreen');
+          Navigator.pushNamed(context, '/doashboard');
         } else {
           // Navigate to dashboard screen as user is already signed in.
           // Navigator.pushReplacementNamed(context, '/dashboard');
-          Navigator.pushNamed(context, '/firsttimescreen');
+          Navigator.pushNamed(context, '/dashboard');
         }
       }
     } catch (error) {

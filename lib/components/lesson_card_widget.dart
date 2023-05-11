@@ -5,6 +5,7 @@ class LessonCardWidget extends StatelessWidget {
   final String brailleImgPath;
   final String letterImgPath;
   final String description;
+  final String lessonId;
 
   const LessonCardWidget({
     Key? key,
@@ -12,6 +13,7 @@ class LessonCardWidget extends StatelessWidget {
     required this.brailleImgPath,
     required this.letterImgPath,
     required this.description,
+    required this.lessonId,
   }) : super(key: key);
 
   @override
@@ -22,7 +24,10 @@ class LessonCardWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () => {Navigator.pushNamed(context, '/lesson/1')},
+            onTap: () => {
+              Navigator.pushNamed(context, '/lesson',
+                  arguments: {'id': lessonId})
+            },
             child: Container(
                 width: 240,
                 padding: const EdgeInsets.all(8),
@@ -51,11 +56,11 @@ class LessonCardWidget extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Image.asset(
+                        Image.network(
                           brailleImgPath,
                           width: 96,
                         ),
-                        Image.asset(
+                        Image.network(
                           letterImgPath,
                           width: 72,
                         ),
