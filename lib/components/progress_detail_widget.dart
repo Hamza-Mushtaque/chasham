@@ -74,7 +74,7 @@ class _ProgressDetailWidgetState extends State<ProgressDetailWidget>
                   alignment: Alignment.center,
                   transform: Matrix4.identity()..scale(-1.0, 1.0, 1.0),
                   child: LinearProgressIndicator(
-                    value: 0.5,
+                    value: widget.value / 10,
                     valueColor: AlwaysStoppedAnimation<Color>(widget.color),
                     backgroundColor: Color(0xFFEAEEFD),
                     minHeight: 8,

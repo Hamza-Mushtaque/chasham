@@ -104,6 +104,7 @@ class _LessonTableScreenState extends State<LessonTableScreen> {
                                   return Padding(
                                     padding: const EdgeInsets.all(8),
                                     child: LessonCardWidget(
+                                      lessonSerial: lesson.serialNo.toString(),
                                       title: lesson.title,
                                       brailleImgPath: lesson.brailleImg,
                                       letterImgPath: lesson.letterImg,

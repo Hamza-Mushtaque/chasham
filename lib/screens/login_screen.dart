@@ -142,7 +142,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         // Google sign-in button
                         GestureDetector(
                           onTap: () {
-                            _signInWithGoogle();
+                            // _signInWithGoogle();
+                            Navigator.pushNamed(context, '/dashboard');
                           },
                           child: Container(
                             width: 284,

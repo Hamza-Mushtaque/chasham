@@ -7,6 +7,7 @@ import 'package:chasham_fyp/screens/lessons_table_screen.dart';
 import 'package:chasham_fyp/screens/letter_lesson_screen.dart';
 import 'package:chasham_fyp/screens/letters_upload_screen.dart';
 import 'package:chasham_fyp/screens/login_screen.dart';
+import 'package:chasham_fyp/screens/pactice_table_sceen.dart';
 import 'package:chasham_fyp/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -37,22 +38,24 @@ class MyApp extends StatelessWidget {
         '/lesson': (context) {
           final args = ModalRoute.of(context)?.settings.arguments
               as Map<String, dynamic>?;
-          final lessonId = args?['id'] as String?;
-          return LetterLessonScreen(lessonId: lessonId);
+          final lessonSerial = args?['id'] as String?;
+          return LetterLessonScreen(lessonSerial: lessonSerial);
         },
         '/complete': (context) => LessonCompleteScreen(),
         '/letter-upload': (context) => LetterUploadScreen(),
         '/lesson-create': (context) => CreateLessonScreen(),
-        '/firsttimescreen': (context) => FirstTimeScreen()
+        '/firsttimescreen': (context) => FirstTimeScreen(),
+        '/practice': (context) => PracticeTableScreen()
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/lesson') {
           // Extract the lesson ID from settings.arguments
-          final String? lessonId = settings.arguments as String?;
+          final String? lessonSerial = settings.arguments as String?;
 
           // Pass the lesson ID to LetterLessonScreen
           return MaterialPageRoute(
-            builder: (context) => LetterLessonScreen(lessonId: lessonId),
+            builder: (context) =>
+                LetterLessonScreen(lessonSerial: lessonSerial),
           );
         }
         return null;

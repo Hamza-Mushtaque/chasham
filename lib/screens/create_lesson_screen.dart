@@ -21,6 +21,7 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
   final _formKey = GlobalKey<FormState>();
   late String _title;
   late String _description;
+  late int _serialNo;
   File? _brailleImgFile;
   File? _titleImgFile;
   List<int> _selectedSerialNos = [];
@@ -63,6 +64,7 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
           .toList();
 
       final lessonModel = LessonModel(
+        serialNo: _serialNo,
         title: _title,
         description: _description,
         letterImg:
@@ -184,6 +186,19 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        TextFormField(
+                          decoration: InputDecoration(labelText: 'Serial No.'),
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a letter';
+                            }
+                            return null;
+                          },
+                          onSaved: (value) {
+                            _serialNo = int.parse(value!);
+                          },
+                        ),
                         TextFormField(
                           decoration: const InputDecoration(labelText: 'Title'),
                           validator: (value) {

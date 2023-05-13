@@ -44,9 +44,9 @@ class MajorAppBar extends StatelessWidget with PreferredSizeWidget {
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.primary,
               size: 24,
             ),
           ),

@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 
-class LessonCardWidget extends StatelessWidget {
+class PracticeCardWidget extends StatelessWidget {
   final String title;
   final String brailleImgPath;
   final String letterImgPath;
   final String description;
-  final String lessonId;
-  final String lessonSerial;
 
-  const LessonCardWidget({
+  const PracticeCardWidget({
     Key? key,
-    required this.lessonSerial,
     required this.title,
     required this.brailleImgPath,
     required this.letterImgPath,
     required this.description,
-    required this.lessonId,
   }) : super(key: key);
 
   @override
@@ -26,10 +22,7 @@ class LessonCardWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () => {
-              Navigator.pushReplacementNamed(context, '/lesson',
-                  arguments: {'id': lessonSerial})
-            },
+            onTap: () => {Navigator.pushNamed(context, '/lesson/1')},
             child: Container(
                 width: 240,
                 padding: const EdgeInsets.all(8),
@@ -48,7 +41,7 @@ class LessonCardWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     const Text(
-                      'سبق نمبر 1',
+                      'مشق نمبر ١',
                       style: TextStyle(
                           fontSize: 20,
                           fontFamily: 'NastaliqKasheeda',
@@ -58,11 +51,11 @@ class LessonCardWidget extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Image.network(
+                        Image.asset(
                           brailleImgPath,
                           width: 96,
                         ),
-                        Image.network(
+                        Image.asset(
                           letterImgPath,
                           width: 72,
                         ),
