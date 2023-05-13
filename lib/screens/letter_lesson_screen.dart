@@ -1,12 +1,13 @@
 import 'dart:typed_data';
 
-import 'package:assets_audio_player/assets_audio_player.dart';
+// import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:chasham_fyp/min_app_bar.dart';
 import 'package:chasham_fyp/models/lesson_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/services.dart';
+// import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:http/http.dart' as http;
 
 import '../components/letter_card_widget.dart';
 
@@ -21,31 +22,13 @@ class LetterLessonScreen extends StatefulWidget {
 
 class _LetterLessonScreenState extends State<LetterLessonScreen> {
   final PageController _pageController = PageController();
-  // AudioPlayer player = AudioPlayer();
-  AssetsAudioPlayer audioPlayer = AssetsAudioPlayer();
-  final AudioCache audioCache = AudioCache();
+
+  final player = AudioPlayer();
   int _currentPage = 0;
   String? _loadingMsg = 'Fetching Lesson Data  ... ';
   bool _isError = false;
+  bool _lessonBegan = false;
   LessonModel? _currentLesson;
-
-  final List<Map<String, String>> _lessons = [
-    {
-      'letter': 'ا',
-      'braille': '100000',
-      'description': 'یہ ہے ا۔',
-    },
-    {
-      'letter': 'ب',
-      'braille': '110000',
-      'description': 'یہ ہے ب۔',
-    },
-    {
-      'letter': 'پ',
-      'braille': '100100',
-      'description': 'یہ ہے پ',
-    },
-  ];
 
   Future<void> _fetchCurrentLesson() async {
     if (widget.lessonId == null) {
@@ -89,31 +72,21 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
     setState(() {
       _currentPage = index;
     });
-    playAudioNetwork(_currentLesson!.letters[_currentPage].lessonAudioPath);
+    _passLetterToDevice(index);
+    // playAudio();
   }
 
-  // void playAudio(String audioFilePath) async {
-  //   ByteData bytes =
-  //       await rootBundle.load(audioFilePath); //load audio from assets
-  //   Uint8List audioBytes =
-  //       bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes);
-  //   int result = await player.playBytes(audiobytes);
-  //   if (result == 1) {
-  //     //play success
-  //     print("audio is playing.");
-  //   } else {
-  //     print("Error while playing audio.");
-  //   }
-  // }
+  void _passLetterToDevice(int index) {
+    playAudio(_currentLesson!.letters[index].lessonAudioPath);
+  }
 
-  void playAudioNetwork(String audioPath) async {
-    try {
-      print('PLAYING >>> ');
-      await audioPlayer.open(Audio.network(audioPath));
-      print('PLAYING >>> DONE');
-    } catch (t) {
-      print(t as String);
-    }
+  void playAudio(String lessonAudioPath) async {
+    print('PLAYING ');
+    // final duration = await player.setAsset(
+    //     'assets/audios/letter-1.wav');
+    final duration = await player.setUrl(lessonAudioPath);
+    await player.play();
+    print('DONE');
   }
 
   @override
@@ -197,11 +170,13 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
                           ),
                           const SizedBox(height: 16),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               IconButton(
                                 onPressed: () {
-                                  if (_currentPage == _lessons.length - 1) {
+                                  if (_currentPage ==
+                                          _currentLesson!.letters.length - 1 ||
+                                      _lessonBegan == false) {
                                     null;
                                   } else {
                                     _pageController.nextPage(
@@ -213,14 +188,52 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
                                 },
                                 icon: Icon(
                                   Icons.arrow_left_rounded,
-                                  color: _currentPage == _lessons.length - 1
+                                  color: _currentPage ==
+                                              _currentLesson!.letters.length -
+                                                  1 ||
+                                          _lessonBegan == false
                                       ? Colors.grey
                                       : Theme.of(context).colorScheme.primary,
                                 ),
                                 disabledColor: Colors.grey,
-                                iconSize: 96,
+                                iconSize: 84,
                               ),
-                              if (_currentPage == _lessons.length - 1)
+                              if (_currentPage == 0)
+                                ElevatedButton(
+                                    onPressed: _lessonBegan
+                                        ? null
+                                        : () {
+                                            setState(() {
+                                              _lessonBegan = true;
+                                            });
+                                            _passLetterToDevice(0);
+                                          },
+                                    style: ButtonStyle(
+                                      backgroundColor: MaterialStateProperty
+                                          .resolveWith<Color>(
+                                        (Set<MaterialState> states) {
+                                          if (states.contains(
+                                              MaterialState.disabled)) {
+                                            return Colors
+                                                .grey; // Set the background color when disabled
+                                          }
+                                          return Theme.of(context)
+                                              .colorScheme
+                                              .primary; // Set the default background color
+                                        },
+                                      ),
+                                    ),
+                                    child: const Padding(
+                                        padding: EdgeInsets.all(8),
+                                        child: Text(
+                                          'سبق کا آغاز کریں',
+                                          style: TextStyle(
+                                              fontFamily: 'NastaliqKasheeda',
+                                              fontSize: 18,
+                                              color: Colors.white),
+                                        ))),
+                              if (_currentPage ==
+                                  _currentLesson!.letters.length - 1)
                                 ElevatedButton(
                                     onPressed: () {
                                       Navigator.pushNamed(context, '/complete');
@@ -254,7 +267,7 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
                                 ),
                                 disabledColor: Colors.grey,
                                 color: Theme.of(context).primaryColor,
-                                iconSize: 96,
+                                iconSize: 84,
                               ),
                             ],
                           ),
