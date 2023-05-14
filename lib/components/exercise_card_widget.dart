@@ -17,6 +17,8 @@ class ExerciseCardWidget extends StatelessWidget {
       onTap: () {
         // TODO: Implement routing logic using the serialNo
         // Example: Navigator.pushNamed(context, '/exercise/$serialNo');
+        Navigator.pushReplacementNamed(context, '/exercise',
+            arguments: {'id': serialNo.toString()});
       },
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 8.0),

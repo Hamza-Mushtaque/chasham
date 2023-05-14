@@ -6,6 +6,7 @@ import 'package:chasham_fyp/screens/first_time_screen.dart';
 import 'package:chasham_fyp/screens/home_screen.dart';
 import 'package:chasham_fyp/screens/lesson_complete_screen.dart';
 import 'package:chasham_fyp/screens/lessons_table_screen.dart';
+import 'package:chasham_fyp/screens/letter_exercise_screen.dart';
 import 'package:chasham_fyp/screens/letter_lesson_screen.dart';
 import 'package:chasham_fyp/screens/letters_upload_screen.dart';
 import 'package:chasham_fyp/screens/login_screen.dart';
@@ -46,6 +47,12 @@ class MyApp extends StatelessWidget {
         },
         '/complete': (context) => LessonCompleteScreen(),
         '/exercises': (context) => ExerciseTableScreen(),
+        '/exercise': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments
+              as Map<String, dynamic>?;
+          final exerciseSerial = args?['id'] as String?;
+          return LetterExerciseScreen(exerciseSerial: exerciseSerial);
+        },
         '/letter-upload': (context) => LetterUploadScreen(),
         '/exercise-create': (context) => CreateExercisePage(),
         '/lesson-create': (context) => CreateLessonScreen(),
