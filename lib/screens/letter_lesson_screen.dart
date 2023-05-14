@@ -97,8 +97,20 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
     print('DONE');
   }
 
+  void playLessonComplete() async {
+    print('PLAYING ');
+    // final duration = await player.setAsset(
+    //     'assets/audios/letter-1.wav');
+    final duration = await player.setAsset('assets/audios/lesson-complete.wav');
+    await player.play();
+    print('DONE');
+  }
+
   void _updateLessonProgress() async {
     try {
+      setState(() {
+        _loadingMsg = 'Updating Progress ... ';
+      });
       String userId = FirebaseAuth.instance.currentUser!.uid;
 
       DocumentSnapshot progressSnapshot = await FirebaseFirestore.instance
@@ -109,26 +121,55 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
       if (progressSnapshot.exists) {
         ProgressModel progress = ProgressModel.fromJson(
             progressSnapshot.data() as Map<String, dynamic>);
-        progress.lessonCompleted.add(_currentLesson!.lessonId!);
 
-        await FirebaseFirestore.instance
-            .collection('progress')
-            .doc(userId)
-            .update(progress.toJson());
+        // Check if the current lesson is already completed
+        if (progress.lessonCompleted.contains(_currentLesson!.serialNo)) {
+          // Lesson already completed, show a message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'You have already completed this lesson.',
+                style: TextStyle(color: Colors.green),
+              ),
+            ),
+          );
+        } else {
+          // Lesson not completed, update the progress
+          progress.lessonCompleted.add(_currentLesson!.serialNo);
 
+          await FirebaseFirestore.instance
+              .collection('progress')
+              .doc(userId)
+              .update(progress.toJson());
+        }
         setState(() {
           _lessonComplete = true;
+          _loadingMsg = null;
         });
+        playLessonComplete();
       } else {
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Sorry, there is an error ... ',
-                style: TextStyle(color: Colors.red))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Sorry, there is an error.',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        );
+        setState(() {
+          _loadingMsg = null;
+        });
       }
     } catch (error) {
       print('Error updating lesson progress: $error');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('$error', style: TextStyle(color: Colors.red))));
+      setState(() {
+        _loadingMsg = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$error', style: TextStyle(color: Colors.red)),
+        ),
+      );
     }
   }
 

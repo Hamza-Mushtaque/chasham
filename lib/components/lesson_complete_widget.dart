@@ -56,6 +56,31 @@ class LessonCompleteWidget extends StatelessWidget {
                       Navigator.pushReplacementNamed(context, '/dashboard');
                     },
                     child: const Text(
+                      'مشق حل کریں',
+                      style: TextStyle(
+                        fontFamily: 'NastaliqKasheeda',
+                        fontSize: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 160,
+                  height: 45,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/dashboard');
+                    },
+                    child: const Text(
                       'ڈیش بورڈ پر جائیں',
                       style: TextStyle(
                         fontFamily: 'NastaliqKasheeda',

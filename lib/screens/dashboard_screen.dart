@@ -227,7 +227,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 ComponentBtnWidget(
                                     label: 'مشق حل کریں',
                                     svgIconPath: 'assets/svgs/test-icon.svg',
-                                    link: '/practice')
+                                    link: '/exercises')
                               ],
                             ),
                           ),
@@ -248,6 +248,18 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 Navigator.pushNamed(context, '/letter-upload');
                               },
                               child: const Text('Upload Letter',
+                                  style: TextStyle(
+                                      fontSize: 18, color: Colors.white))),
+                          const SizedBox(
+                            height: 8,
+                            width: 8,
+                          ),
+                          ElevatedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(
+                                    context, '/exercise-create');
+                              },
+                              child: const Text('Create Exercie',
                                   style: TextStyle(
                                       fontSize: 18, color: Colors.white)))
                         ],

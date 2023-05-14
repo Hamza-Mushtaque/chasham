@@ -1,7 +1,7 @@
 class ProgressModel {
   final String userId;
-  final List<String> lessonCompleted;
-  final List<String> exercisesCompleted;
+  final List<int> lessonCompleted;
+  final List<int> exercisesCompleted;
   final String rank;
 
   ProgressModel({
@@ -14,8 +14,8 @@ class ProgressModel {
   factory ProgressModel.fromJson(Map<String, dynamic> json) {
     return ProgressModel(
       userId: json['userId'] ?? '',
-      lessonCompleted: List<String>.from(json['lessonCompleted'] ?? []),
-      exercisesCompleted: List<String>.from(json['exercisesCompleted'] ?? []),
+      lessonCompleted: List<int>.from(json['lessonCompleted'] ?? []),
+      exercisesCompleted: List<int>.from(json['exercisesCompleted'] ?? []),
       rank: _validateRank(json['rank']),
     );
   }
