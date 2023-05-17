@@ -1,3 +1,4 @@
+import 'package:chasham_fyp/drawer_main.dart';
 import 'package:chasham_fyp/major_app_bar.dart';
 import 'package:chasham_fyp/components/component_btn_widget.dart';
 import 'package:chasham_fyp/components/progress_detail_widget.dart';
@@ -20,6 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   ProgressModel? _userProgress;
   String? _loadingMsg = null;
   bool _isError = false;
+  final GlobalKey<ScaffoldState> _scaffoldkey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -46,6 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       setState(() {
         _loadingMsg = 'Fetching User Progress ... ';
       });
+      print('FETCHING - - - ');
       final userId = FirebaseAuth.instance.currentUser!.uid;
       final userProgressDoc =
           FirebaseFirestore.instance.collection('progress').doc(userId);
@@ -58,6 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         setState(() {
           _userProgress = progress;
         });
+        print('EXISTS - - - ');
       } else {
         // Progress document doesn't exist, create a new document and set the progress state variable
         final newProgress = ProgressModel(
@@ -69,6 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         setState(() {
           _userProgress = newProgress;
         });
+        print('NOT EXISTS - - - ');
       }
       setState(() {
         _loadingMsg = null;
@@ -86,10 +91,18 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
+  void handleDrawer() {
+    // Scaffold.of(_scaffoldkey.currentContext!).openDrawer();
+    _scaffoldkey.currentState!.openDrawer();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const MajorAppBar(title: 'ڈیش بورڈ'),
+      key: _scaffoldkey,
+      appBar:
+          MajorAppBar(title: 'ڈیش بورڈ', handleDrawer: () => handleDrawer()),
+      drawer: DrawerMain(),
       body: SafeArea(
           child: _loadingMsg == null
               ? (SingleChildScrollView(

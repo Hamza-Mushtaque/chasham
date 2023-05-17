@@ -1,3 +1,4 @@
+import 'package:chasham_fyp/major_app_bar.dart';
 import 'package:chasham_fyp/min_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';

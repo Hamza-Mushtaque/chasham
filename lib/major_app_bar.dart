@@ -3,10 +3,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class MajorAppBar extends StatelessWidget with PreferredSizeWidget {
   final String title;
+  final VoidCallback handleDrawer;
 
   const MajorAppBar({
     Key? key,
     required this.title,
+    required this.handleDrawer,
   }) : super(key: key);
 
   @override
@@ -35,9 +37,9 @@ class MajorAppBar extends StatelessWidget with PreferredSizeWidget {
       ),
       actions: [
         IconButton(
-          onPressed: () => {Navigator.pushNamed(context, '/profile')},
+          onPressed: () => {handleDrawer()},
           icon: Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(

@@ -27,6 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _loadingMsg = 'Loggin User In ... ';
       });
+
+      await googleSignIn.signOut();
       // Trigger the Google Authentication flow.
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
@@ -142,8 +144,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         // Google sign-in button
                         GestureDetector(
                           onTap: () {
-                            // _signInWithGoogle();
-                            Navigator.pushNamed(context, '/dashboard');
+                            _signInWithGoogle();
+                            // Navigator.pushNamed(context, '/dashboard');
                           },
                           child: Container(
                             width: 284,
