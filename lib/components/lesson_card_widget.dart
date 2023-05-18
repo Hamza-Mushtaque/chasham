@@ -1,4 +1,6 @@
+import 'package:chasham_fyp/services/bluetooth_services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
 class LessonCardWidget extends StatelessWidget {
   final String title;
@@ -7,6 +9,7 @@ class LessonCardWidget extends StatelessWidget {
   final String description;
   final String lessonId;
   final String lessonSerial;
+  final BluetoothConnection? connection;
 
   const LessonCardWidget({
     Key? key,
@@ -16,7 +19,14 @@ class LessonCardWidget extends StatelessWidget {
     required this.letterImgPath,
     required this.description,
     required this.lessonId,
+    required this.connection,
   }) : super(key: key);
+
+
+
+  Future<void> con_cancel() async {
+    await connection!.finish();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +36,10 @@ class LessonCardWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () => {
+            onTap: () {
+              con_cancel();
               Navigator.pushReplacementNamed(context, '/lesson',
-                  arguments: {'id': lessonSerial})
+                  arguments: {'id': lessonSerial});
             },
             child: Container(
                 width: 240,

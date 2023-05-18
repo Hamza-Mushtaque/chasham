@@ -4,14 +4,12 @@ import 'package:chasham_fyp/screens/dashboard_screen.dart';
 import 'package:chasham_fyp/screens/exercise_table_screen.dart';
 import 'package:chasham_fyp/screens/first_time_screen.dart';
 import 'package:chasham_fyp/screens/home_screen.dart';
-import 'package:chasham_fyp/screens/lesson_complete_screen.dart';
+
 import 'package:chasham_fyp/screens/lessons_table_screen.dart';
 import 'package:chasham_fyp/screens/letter_exercise_screen.dart';
 import 'package:chasham_fyp/screens/letter_lesson_screen.dart';
 import 'package:chasham_fyp/screens/letters_upload_screen.dart';
 import 'package:chasham_fyp/screens/login_screen.dart';
-import 'package:chasham_fyp/screens/pactice_table_sceen.dart';
-import 'package:chasham_fyp/screens/letter_practice_screen.dart';
 import 'package:chasham_fyp/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -45,7 +43,6 @@ class MyApp extends StatelessWidget {
           final lessonSerial = args?['id'] as String?;
           return LetterLessonScreen(lessonSerial: lessonSerial);
         },
-        '/complete': (context) => LessonCompleteScreen(),
         '/exercises': (context) => ExerciseTableScreen(),
         '/exercise': (context) {
           final args = ModalRoute.of(context)?.settings.arguments
@@ -57,7 +54,7 @@ class MyApp extends StatelessWidget {
         '/exercise-create': (context) => CreateExercisePage(),
         '/lesson-create': (context) => CreateLessonScreen(),
         '/firsttimescreen': (context) => FirstTimeScreen(),
-        '/practice': (context) => LetterPracticeScreen(),
+
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/lesson') {

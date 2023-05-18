@@ -1,13 +1,17 @@
+import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:chasham_fyp/components/exercise_complete_widget.dart';
 import 'package:chasham_fyp/min_app_bar.dart';
 import 'package:chasham_fyp/models/exercise_model.dart';
 import 'package:chasham_fyp/models/letter_model.dart';
 import 'package:chasham_fyp/models/progress_model.dart';
+import 'package:chasham_fyp/services/bluetooth_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:just_audio/just_audio.dart';
 
 import 'package:chasham_fyp/components/letter_card_widget.dart';
@@ -50,7 +54,65 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
       'description': 'بریل میں پ لکھ کر دکھائیں',
     },
   ];
+  BluetoothConnection? connection;
 
+    void _connectToBluetooth() async {
+    try {
+
+      if (selectedDevice != null) {
+        // Connect to the selected device
+        BluetoothConnection connection =
+            await BluetoothConnection.toAddress(selectedDevice!.address);
+        setState(() {
+          this.connection = connection;
+        });
+        _showSnackBar("Connected to ${selectedDevice!.name}", true);
+        _receiveData();
+      } else {
+        _showSnackBar("No device selected", false);
+      }
+    } catch (exception) {
+      _showSnackBar("Error connecting to Bluetooth device: $exception", false);
+    }
+  }
+   
+  void _receiveData() {
+    if (connection != null) {
+      connection!.input!.listen((Uint8List data) {
+        String incomingMessage = utf8.decode(data);
+        print("Received message: $incomingMessage");
+        setState(() {
+          receiveText = incomingMessage;
+        });
+        _showSnackBar("Message Received: $incomingMessage", true);
+        // Do something with the incoming message...
+        if(flag){
+          con_cancel();
+          flag = false;
+        }
+      }).onDone(() {
+        print("Disconnected from device");
+        // Do something when the device is disconnected...
+      });
+    }
+  }
+
+    void _showSnackBar(String message, bool success) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: success ? Colors.green : Colors.red,
+    ));
+  }
+
+  Future<void> test_func(String data) async {
+    BL instan = BL(context: context,connection: connection);
+    await instan.sendData(data);
+     print(connection);
+  }
+
+  Future<void> con_cancel() async {
+    await connection!.finish();
+  }
   void _fetchTestLetters() {
     // Get the current exercise serial number from the widget argument
     final exerciseSerialNo = int.tryParse(widget.exerciseSerial ?? '');
@@ -248,12 +310,13 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
     print("Serial No");
     _fetchTestLetters();
     // _fetchCurrentLesson();
+    _connectToBluetooth();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MinAppBar(title: 'Practice'),
+      appBar: MinAppBar(title: 'Practice', connection: connection),
       body: SafeArea(
           child: _loadingMsg != null
               ? (Container(

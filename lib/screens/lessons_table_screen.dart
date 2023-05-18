@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:chasham_fyp/min_app_bar.dart';
+import 'package:chasham_fyp/services/bluetooth_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
 import '../components/lesson_card_widget.dart';
 import '../models/lesson_model.dart';
@@ -12,8 +17,92 @@ class LessonTableScreen extends StatefulWidget {
 
 class _LessonTableScreenState extends State<LessonTableScreen> {
   final PageController _pageController = PageController();
+  int _currentPage = 0;
   String? _loadingMsg = 'Fetching Lessons  ... ';
   bool _isError = false;
+
+   BluetoothConnection? connection;
+
+    void _connectToBluetooth() async {
+    try {
+
+      if (selectedDevice != null) {
+        // Connect to the selected device
+        BluetoothConnection connection =
+            await BluetoothConnection.toAddress(selectedDevice!.address);
+        setState(() {
+          this.connection = connection;
+        });
+        _showSnackBar("Connected to ${selectedDevice!.name}", true);
+        _receiveData();
+      } else {
+        _showSnackBar("No device selected", false);
+      }
+    } catch (exception) {
+      _showSnackBar("Error connecting to Bluetooth device: $exception", false);
+    }
+  }
+   
+  void _receiveData() {
+    if (connection != null) {
+      connection!.input!.listen((Uint8List data) {
+        String incomingMessage = utf8.decode(data);
+        print("Received message: $incomingMessage");
+        setState(() {
+          receiveText = incomingMessage;
+        });
+        _showSnackBar("Message Received: $incomingMessage", true);
+        // Do something with the incoming message...
+
+        if(receiveText.trim() == "NEXT".trim() ){
+          if(_currentPage < (lessons.length -1)){
+              _handlePageChange(_currentPage+1);
+              _pageController.nextPage(
+              duration:
+                  const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            );
+              
+          }
+        }
+        else if(receiveText.trim() == "PREVIOUS".trim()){
+          if(_currentPage > 0){
+            _handlePageChange(_currentPage-1);
+            _pageController.previousPage(
+              duration:
+                  const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            );
+          }
+        }
+        else{
+          con_cancel();
+          Navigator.pushReplacementNamed(context, '/lesson',
+          arguments: {'id': lessons[_currentPage].serialNo.toString()});
+        }
+      }).onDone(() {
+        print("Disconnected from device");
+        // Do something when the device is disconnected...
+      });
+    }
+  }
+
+    void _showSnackBar(String message, bool success) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: success ? Colors.green : Colors.red,
+    ));
+  }
+
+  Future<void> test_func(String data) async {
+    BL instan = BL(context: context,connection: connection);
+    await instan.sendData(data);
+     print(connection);
+  }
+
+  Future<void> con_cancel() async {
+    await connection!.finish();
+  }
 
   List<LessonModel> lessons =
       []; // Populate this list with your fetched lessons
@@ -47,12 +136,23 @@ class _LessonTableScreenState extends State<LessonTableScreen> {
   void initState() {
     super.initState();
     _fetchLessons();
+        _connectToBluetooth();
+  }
+
+  void _handlePageChange(int index) {
+    setState(() {
+      _currentPage = index;
+    });
+     
+    print(_currentPage);
+    // _passLetterToDevice(index);
+    // playAudio();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MinAppBar(title: 'Lessons'),
+      appBar: MinAppBar(title: 'Lessons', connection: connection),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -98,6 +198,7 @@ class _LessonTableScreenState extends State<LessonTableScreen> {
                               child: PageView.builder(
                                 controller: _pageController,
                                 itemCount: lessons.length,
+                                onPageChanged: _handlePageChange,
                                 itemBuilder: (context, index) {
                                   LessonModel lesson = lessons[index];
 
@@ -110,6 +211,7 @@ class _LessonTableScreenState extends State<LessonTableScreen> {
                                       letterImgPath: lesson.letterImg,
                                       description: lesson.description,
                                       lessonId: lesson.lessonId!,
+                                      connection: connection,
                                     ),
                                   );
                                 },

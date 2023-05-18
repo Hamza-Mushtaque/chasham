@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class MajorAppBar extends StatelessWidget with PreferredSizeWidget {
+class MajorAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback handleDrawer;
 

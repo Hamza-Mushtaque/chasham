@@ -1,12 +1,16 @@
+import 'package:chasham_fyp/services/bluetooth_services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class MinAppBar extends StatelessWidget with PreferredSizeWidget {
+class MinAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
+  final BluetoothConnection? connection;
 
   const MinAppBar({
     Key? key,
     required this.title,
+    required this.connection,
   }) : super(key: key);
 
   @override
@@ -15,7 +19,10 @@ class MinAppBar extends StatelessWidget with PreferredSizeWidget {
       backgroundColor: Colors.white,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios),
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: () { 
+          flag = true;
+          Navigator.of(context).pop();
+        }
       ),
       centerTitle: true,
       title: SvgPicture.asset(

@@ -1,15 +1,26 @@
+import 'package:chasham_fyp/services/bluetooth_services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
 class ExerciseCardWidget extends StatelessWidget {
   final String title;
   final String description;
   final int serialNo;
+  final BluetoothConnection? connection;
+  final bool isActive;
 
   ExerciseCardWidget({
     required this.title,
     required this.description,
     required this.serialNo,
+    required this.connection,
+    required this.isActive
   });
+
+  Future<void> con_cancel() async {
+    await connection!.finish();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +28,7 @@ class ExerciseCardWidget extends StatelessWidget {
       onTap: () {
         // TODO: Implement routing logic using the serialNo
         // Example: Navigator.pushNamed(context, '/exercise/$serialNo');
+        con_cancel();
         Navigator.pushReplacementNamed(context, '/exercise',
             arguments: {'id': serialNo.toString()});
       },
@@ -25,7 +37,7 @@ class ExerciseCardWidget extends StatelessWidget {
         width: double.infinity,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.0),
-          color: Colors.white,
+          color: isActive? Theme.of(context).colorScheme.secondary : Colors.white,
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.5),

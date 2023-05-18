@@ -1,11 +1,17 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:chasham_fyp/drawer_main.dart';
-import 'package:chasham_fyp/major_app_bar.dart';
 import 'package:chasham_fyp/components/component_btn_widget.dart';
 import 'package:chasham_fyp/components/progress_detail_widget.dart';
 import 'package:chasham_fyp/models/progress_model.dart';
+import 'package:chasham_fyp/services/bluetooth_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -22,6 +28,102 @@ class _DashboardScreenState extends State<DashboardScreen>
   String? _loadingMsg = null;
   bool _isError = false;
   final GlobalKey<ScaffoldState> _scaffoldkey = new GlobalKey<ScaffoldState>();
+
+
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+
+  BluetoothConnection? connection;
+
+  void _connectToBluetooth() async {
+    try {
+      // Get a list of all available Bluetooth devices
+      List<BluetoothDevice> devices =
+          await FlutterBluetoothSerial.instance.getBondedDevices();
+
+      // Display a dialog with the list of devices to choose from
+      selectedDevice = await showDialog<BluetoothDevice>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Select a device to connect"),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: devices.map((device) {
+                  return ListTile(
+                    title: Text(device.name!),
+                    subtitle: Text(device.address),
+                    onTap: () {
+                      Navigator.of(context).pop(device);
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          );
+        },
+      );
+
+      if (selectedDevice != null) {
+        // Connect to the selected device
+        BluetoothConnection connection =
+            await BluetoothConnection.toAddress(selectedDevice!.address);
+        setState(() {
+          this.connection = connection;
+        });
+        _showSnackBar("Connected to ${selectedDevice!.name}", true);
+        _receiveData();
+      } else {
+        _showSnackBar("No device selected", false);
+      }
+    } catch (exception) {
+      _showSnackBar("Error connecting to Bluetooth device: $exception", false);
+    }
+  }
+
+
+
+  void _receiveData() {
+    if (connection != null) {
+      connection!.input!.listen((Uint8List data) {
+        String incomingMessage = utf8.decode(data);
+        print("Received message: $incomingMessage");
+        setState(() {
+         receiveText = incomingMessage;
+        });
+        _showSnackBar("Message Received: $incomingMessage", true);
+        // Do something with the incoming message...
+        if(receiveText.trim() == "NEXT".trim() ){
+          con_cancel();
+          Navigator.pushNamed(context, '/lessons');
+        }
+        else if(receiveText.trim() == "PREVIOUS".trim()){
+          con_cancel();
+          Navigator.pushNamed(context, '/exercises');
+        }
+
+      }).onDone(() {
+        print("Disconnected from device");
+        // Do something when the device is disconnected...
+      });
+    }
+  }
+
+  void _showSnackBar(String message, bool success) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: success ? Colors.green : Colors.red,
+    ));
+  }
+
+  Future<void> test_func(String data) async {
+    BL instan = BL(context: context,connection: connection);
+    await instan.sendData(data);
+  }
+
+  Future<void> con_cancel() async {
+    await connection!.finish();
+  }
 
   @override
   void initState() {
@@ -100,8 +202,56 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldkey,
-      appBar:
-          MajorAppBar(title: 'ڈیش بورڈ', handleDrawer: () => handleDrawer()),
+      appBar: AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      centerTitle: true,
+      leading: IconButton(
+        icon: SvgPicture.asset(
+          'assets/svgs/logo-color.svg',
+          width: 48,
+        ),
+        onPressed: () {},
+      ),
+      title: Text(
+       " ڈیش بورڈ",
+        style: const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+          fontFamily: 'NastaliqKasheeda',
+        ),
+      ),
+      actions: [
+        IconButton(
+          onPressed: () {
+             _connectToBluetooth();
+          },
+          icon: Icon(
+            Icons.bluetooth,
+            color: Theme.of(context).colorScheme.primary,
+            size: 24,
+          ),
+        ),
+        IconButton(
+          onPressed:(){ handleDrawer();},
+          icon: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            child: Icon(
+              Icons.person,
+              color: Theme.of(context).colorScheme.primary,
+              size: 24,
+            ),
+          ),
+        ),
+      ],
+    ),
       drawer: DrawerMain(),
       body: SafeArea(
           child: _loadingMsg == null
@@ -232,15 +382,20 @@ class _DashboardScreenState extends State<DashboardScreen>
                           Center(
                             child: Wrap(
                               alignment: WrapAlignment.center,
-                              children: const [
+                              children:  [
                                 ComponentBtnWidget(
                                     label: 'سبق سیکھیں',
                                     svgIconPath: 'assets/svgs/lesson-icon.svg',
-                                    link: '/lessons'),
+                                    link: '/lessons',
+                                    connection: connection,
+
+                                    ),
                                 ComponentBtnWidget(
                                     label: 'مشق حل کریں',
                                     svgIconPath: 'assets/svgs/test-icon.svg',
-                                    link: '/exercises')
+                                    link: '/exercises',
+                                    connection: connection,
+                                    )
                               ],
                             ),
                           ),

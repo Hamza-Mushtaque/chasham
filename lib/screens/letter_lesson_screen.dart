@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 // import 'package:assets_audio_player/assets_audio_player.dart';
@@ -8,11 +9,13 @@ import 'package:chasham_fyp/models/progress_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 // import 'package:audioplayers/audioplayers.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:http/http.dart' as http;
 
 import '../components/letter_card_widget.dart';
+import '../services/bluetooth_services.dart';
 
 class LetterLessonScreen extends StatefulWidget {
   final String? lessonSerial;
@@ -33,6 +36,64 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
   bool _lessonBegan = false;
   bool _lessonComplete = false;
   LessonModel? _currentLesson;
+
+  BluetoothConnection? connection;
+
+    void _connectToBluetooth() async {
+    try {
+
+      if (selectedDevice != null) {
+        // Connect to the selected device
+        BluetoothConnection connection =
+            await BluetoothConnection.toAddress(selectedDevice!.address);
+        setState(() {
+          this.connection = connection;
+        });
+        _showSnackBar("Connected to ${selectedDevice!.name}", true);
+        _receiveData();
+      } else {
+        _showSnackBar("No device selected", false);
+      }
+    } catch (exception) {
+      _showSnackBar("Error connecting to Bluetooth device: $exception", false);
+    }
+  }
+   
+  void _receiveData() {
+    if (connection != null) {
+      connection!.input!.listen((Uint8List data) {
+        String incomingMessage = utf8.decode(data);
+        print("Received message: $incomingMessage");
+        setState(() {
+          receiveText = incomingMessage;
+        });
+        _showSnackBar("Message Received: $incomingMessage", true);
+        // Do something with the incoming message...
+ 
+      }).onDone(() {
+        print("Disconnected from device");
+        // Do something when the device is disconnected...
+      });
+    }
+  }
+
+    void _showSnackBar(String message, bool success) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: success ? Colors.green : Colors.red,
+    ));
+  }
+
+  Future<void> test_func(String data) async {
+    BL instan = BL(context: context,connection: connection);
+    await instan.sendData(data);
+     print(connection);
+  }
+
+  Future<void> con_cancel() async {
+    await connection!.finish();
+  }
+  
 
   Future<void> _fetchCurrentLesson() async {
     if (widget.lessonSerial == null) {
@@ -86,6 +147,7 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
 
   void _passLetterToDevice(int index) {
     playAudio(_currentLesson!.letters[index].lessonAudioPath);
+    test_func(_currentLesson!.letters[index].braille);
   }
 
   void playAudio(String lessonAudioPath) async {
@@ -179,12 +241,13 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
     // _fetchLesson(ModalRoute.of(context)!.settings.arguments as String);
     print(widget.lessonSerial);
     _fetchCurrentLesson();
+    _connectToBluetooth();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MinAppBar(title: 'Lesson'),
+      appBar: MinAppBar(title: 'Lesson', connection: connection),
       body: SafeArea(
           child: Container(
               padding: const EdgeInsets.all(16),

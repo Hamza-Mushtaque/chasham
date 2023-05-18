@@ -1,9 +1,14 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:chasham_fyp/components/exercise_card_widget.dart';
 import 'package:chasham_fyp/models/exercise_model.dart';
 import 'package:chasham_fyp/models/progress_model.dart';
+import 'package:chasham_fyp/services/bluetooth_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
 class ExerciseTableScreen extends StatefulWidget {
   @override
@@ -13,6 +18,80 @@ class ExerciseTableScreen extends StatefulWidget {
 class _ExerciseTableScreenState extends State<ExerciseTableScreen> {
   List<ExerciseModel> availableExercises = [];
   List<int> completedLessons = [];
+  int _currentIndex = 0;
+
+   BluetoothConnection? connection;
+
+    void _connectToBluetooth() async {
+    try {
+
+      if (selectedDevice != null) {
+        // Connect to the selected device
+        BluetoothConnection connection =
+            await BluetoothConnection.toAddress(selectedDevice!.address);
+        setState(() {
+          this.connection = connection;
+        });
+        _showSnackBar("Connected to ${selectedDevice!.name}", true);
+        _receiveData();
+      } else {
+        _showSnackBar("No device selected", false);
+      }
+    } catch (exception) {
+      _showSnackBar("Error connecting to Bluetooth device: $exception", false);
+    }
+  }
+   
+  void _receiveData() {
+    if (connection != null) {
+      connection!.input!.listen((Uint8List data) {
+        String incomingMessage = utf8.decode(data);
+        print("Received message: $incomingMessage");
+        setState(() {
+          receiveText = incomingMessage;
+        });
+        _showSnackBar("Message Received: $incomingMessage", true);
+        // Do something with the incoming message...
+
+        if(receiveText.trim() == "NEXT".trim() ){
+          if(_currentIndex < (availableExercises.length -1)){
+              _handlePageChange(_currentIndex+1);
+          }
+        }
+        else if(receiveText.trim() == "PREVIOUS".trim()){
+          if(_currentIndex > 0){
+            _handlePageChange(_currentIndex-1);
+          }
+        }
+        else{
+          con_cancel();
+        Navigator.pushReplacementNamed(context, '/exercise',
+            arguments: {'id': availableExercises[_currentIndex].serialNo.toString()});
+        }
+
+      }).onDone(() {
+        print("Disconnected from device");
+        // Do something when the device is disconnected...
+      });
+    }
+  }
+
+    void _showSnackBar(String message, bool success) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: success ? Colors.green : Colors.red,
+    ));
+  }
+
+  Future<void> test_func(String data) async {
+    BL instan = BL(context: context,connection: connection);
+    await instan.sendData(data);
+     print(connection);
+  }
+
+  Future<void> con_cancel() async {
+    await connection!.finish();
+  }
 
   String? _loadingMsg = 'Fetching Exercises  ... ';
   bool _isError = false;
@@ -21,6 +100,7 @@ class _ExerciseTableScreenState extends State<ExerciseTableScreen> {
   void initState() {
     super.initState();
     _fetchAvailableExercises();
+        _connectToBluetooth();
   }
 
   Future<void> _fetchAvailableExercises() async {
@@ -61,6 +141,14 @@ class _ExerciseTableScreenState extends State<ExerciseTableScreen> {
         _isError = true;
       });
     }
+  }
+
+  
+  void _handlePageChange(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    // playAudio();
   }
 
   @override
@@ -115,6 +203,8 @@ class _ExerciseTableScreenState extends State<ExerciseTableScreen> {
                               title: exercise.title,
                               description: exercise.description,
                               serialNo: exercise.serialNo,
+                              connection: connection,
+                              isActive: _currentIndex == index,
                             );
                           },
                         ),

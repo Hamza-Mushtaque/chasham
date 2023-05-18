@@ -1,23 +1,36 @@
+import 'package:chasham_fyp/services/bluetooth_services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class ComponentBtnWidget extends StatelessWidget {
   final String label;
   final String svgIconPath;
   final String link;
+  final BluetoothConnection? connection;
 
   const ComponentBtnWidget({
     Key? key,
     required this.label,
     required this.svgIconPath,
-    required this.link,
+    required this.link, 
+    required this.connection,
+
   }) : super(key: key);
+
+  Future<void> con_cancel() async {
+    await connection!.finish();
+  }
 
   @override
   Widget build(BuildContext context) {
+
     return GestureDetector(
+
       onTap: () async {
+        con_cancel();
         Navigator.pushNamed(context, link);
+        
       },
       child: Container(
         margin: const EdgeInsets.all(8),
