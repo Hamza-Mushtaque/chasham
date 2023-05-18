@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:chasham_fyp/components/exercise_complete_widget.dart';
+import 'package:chasham_fyp/components/practice_complete_widget.dart';
 import 'package:chasham_fyp/min_app_bar.dart';
 import 'package:chasham_fyp/models/exercise_model.dart';
 import 'package:chasham_fyp/models/letter_model.dart';
@@ -16,27 +17,24 @@ import 'package:just_audio/just_audio.dart';
 
 import 'package:chasham_fyp/components/letter_card_widget.dart';
 
-class LetterExerciseScreen extends StatefulWidget {
-  final String? exerciseSerial;
-  const LetterExerciseScreen({Key? key, required this.exerciseSerial})
-      : super(key: key);
+class LetterPracticeScreen extends StatefulWidget {
+  // final String? exerciseSerial;
 
   @override
-  _LetterExerciseScreenState createState() => _LetterExerciseScreenState();
+  _LetterPracticeScreenState createState() => _LetterPracticeScreenState();
 }
 
-class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
+class _LetterPracticeScreenState extends State<LetterPracticeScreen> {
   final PageController _pageController = PageController();
   final player = AudioPlayer();
-  String? _loadingMsg = 'Fetching Exercise Data  ... ';
+  String? _loadingMsg = 'Fetching Practice Data  ... ';
   bool _isError = false;
   int _currentPage = 0;
   bool _canGoToNext = false;
-  String _answerRemarks = '';
+  bool _practiceComplete = false;
   String _currentAns = '000000';
-  bool _exerciseComplete = false;
-  List<LetterModel> _testLetters = [];
-  ExerciseModel? _currenExercise;
+  String _answerRemarks = '';
+  List<LetterModel> _practiceLetters = [];
 
   BluetoothConnection? connection;
 
@@ -97,85 +95,38 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
     await connection!.finish();
   }
 
-  void _fetchTestLetters() {
-    // Get the current exercise serial number from the widget argument
-    final exerciseSerialNo = int.tryParse(widget.exerciseSerial ?? '');
-
+  void _fetchPracticeLetters() {
     setState(() {
       _loadingMsg = 'Fetching Exercise Data  ... ';
     });
 
-    if (exerciseSerialNo == null) {
-      print('Invalid exercise serial number');
-      return;
+    final List<int> randomIndices = [];
+    final List<LetterModel> fetchedLetters = [];
+
+    while (randomIndices.length < 10) {
+      final int randomIndex = Random().nextInt(30) + 1;
+
+      if (!randomIndices.contains(randomIndex)) {
+        randomIndices.add(randomIndex);
+      }
     }
 
     FirebaseFirestore.instance
-        .collection('exercises')
-        .where('serialNo', isEqualTo: exerciseSerialNo)
-        .limit(1)
+        .collection('letters')
+        .where('serialNo', whereIn: randomIndices)
         .get()
         .then((querySnapshot) {
-      if (querySnapshot.size > 0) {
-        final exerciseData = querySnapshot.docs.first.data();
+      querySnapshot.docs.forEach((doc) {
+        fetchedLetters.add(LetterModel.fromJson(doc.data()));
+      });
 
-        final ExerciseModel exercise = ExerciseModel.fromJson(
-          exerciseData as Map<String, dynamic>,
-        );
-
-        final int lastLetter = exercise.lastLetter;
-        final int firstLetter = exercise.firstLetter;
-
-        if (lastLetter <= 1 || firstLetter >= 30) {
-          print('Error: Invalid lastLetter value');
-          return;
-        }
-
-        final List<int> randomIndices = [];
-        final List<LetterModel> fetchedLetters = [];
-        // final String userId = FirebaseAuth.instance.currentUser!.uid;
-
-        while (randomIndices.length < exercise.noOfQs) {
-          final int randomIndex =
-              Random().nextInt(lastLetter - firstLetter + 1) + firstLetter;
-
-          if (!randomIndices.contains(randomIndex)) {
-            randomIndices.add(randomIndex);
-          }
-        }
-
-        FirebaseFirestore.instance
-            .collection('letters')
-            .where('serialNo', whereIn: randomIndices)
-            .get()
-            .then((querySnapshot) {
-          querySnapshot.docs.forEach((doc) {
-            fetchedLetters.add(LetterModel.fromJson(doc.data()));
-          });
-
-          setState(() {
-            _currenExercise = exercise;
-            _testLetters = fetchedLetters;
-            _loadingMsg = null;
-          });
-          print(_testLetters);
-          playAudio(_testLetters[0].testAudioPath);
-        }).catchError((error) {
-          print('Error fetching test letters: $error');
-          setState(() {
-            _loadingMsg = error.toString();
-            _isError = true;
-          });
-        });
-      } else {
-        print('Exercise not found');
-        setState(() {
-          _loadingMsg = 'Exercise not found';
-          _isError = true;
-        });
-      }
+      setState(() {
+        _practiceLetters = fetchedLetters;
+        _loadingMsg = null;
+      });
+      print(_practiceLetters);
     }).catchError((error) {
-      print('Error fetching exercise: $error');
+      print('Error fetching practice letters: $error');
       setState(() {
         _loadingMsg = error.toString();
         _isError = true;
@@ -186,15 +137,14 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
   void _handlePageChange(int index) {
     setState(() {
       _currentPage = index;
-      _answerRemarks = '';
       _canGoToNext = false;
       _currentAns = '000000';
     });
-    playAudio(_testLetters[_currentPage].testAudioPath);
+    playAudio(_practiceLetters[_currentPage].testAudioPath);
   }
 
   void _checkAnswer() {
-    if (_currentAns == _testLetters[_currentPage].braille) {
+    if (_currentAns == _practiceLetters[_currentPage].braille) {
       playRemarksAudio('correct');
       setState(() {
         _answerRemarks = ' جواب درست ہے';
@@ -223,80 +173,13 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
     print('DONE');
   }
 
-  void _updateExerciseProgress() async {
-    try {
-      setState(() {
-        _loadingMsg = 'Updating Progress ... ';
-      });
-      String userId = FirebaseAuth.instance.currentUser!.uid;
-
-      DocumentSnapshot progressSnapshot = await FirebaseFirestore.instance
-          .collection('progress')
-          .doc(userId)
-          .get();
-
-      if (progressSnapshot.exists) {
-        ProgressModel progress = ProgressModel.fromJson(
-            progressSnapshot.data() as Map<String, dynamic>);
-
-        // Check if the current lesson is already completed
-        if (progress.exercisesCompleted.contains(_currenExercise!.serialNo)) {
-          // Lesson already completed, show a message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'You have already completed this Exercise.',
-                style: TextStyle(color: Colors.green),
-              ),
-            ),
-          );
-        } else {
-          // Lesson not completed, update the progress
-          progress.exercisesCompleted.add(_currenExercise!.serialNo);
-
-          await FirebaseFirestore.instance
-              .collection('progress')
-              .doc(userId)
-              .update(progress.toJson());
-        }
-        setState(() {
-          _exerciseComplete = true;
-          _loadingMsg = null;
-        });
-        // playLessonComplete();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Sorry, there is an error.',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        );
-        setState(() {
-          _loadingMsg = null;
-        });
-      }
-    } catch (error) {
-      print('Error updating lesson progress: $error');
-      setState(() {
-        _loadingMsg = null;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$error', style: TextStyle(color: Colors.red)),
-        ),
-      );
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     // _fetchLesson(ModalRoute.of(context)!.settings.arguments as String);
-    print(widget.exerciseSerial);
+
     print("Serial No");
-    _fetchTestLetters();
+    _fetchPracticeLetters();
     // _fetchCurrentLesson();
     _connectToBluetooth();
   }
@@ -337,27 +220,20 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
               : (SingleChildScrollView(
                   child: Container(
                       padding: const EdgeInsets.all(16),
-                      child: _exerciseComplete == false
+                      child: _practiceComplete == false
                           ? (Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 const SizedBox(height: 48),
-                                Text(
-                                  _currenExercise!.title,
-                                  style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'NastaliqKasheeda'),
-                                ),
                                 SizedBox(
                                   height: 300,
                                   child: PageView.builder(
                                     reverse: true,
                                     controller: _pageController,
                                     onPageChanged: _handlePageChange,
-                                    itemCount: _testLetters.length,
+                                    itemCount: _practiceLetters.length,
                                     itemBuilder: (context, index) {
-                                      final letter = _testLetters[index];
+                                      final letter = _practiceLetters[index];
                                       return Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
@@ -379,7 +255,7 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
                                     IconButton(
                                       onPressed: () {
                                         if (_currentPage ==
-                                            _testLetters.length - 1) {
+                                            _practiceLetters.length - 1) {
                                           null;
                                         } else if (_canGoToNext == false) {
                                           null;
@@ -394,7 +270,8 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
                                       icon: Icon(
                                         Icons.arrow_left_rounded,
                                         color: _currentPage ==
-                                                    _testLetters.length - 1 ||
+                                                    _practiceLetters.length -
+                                                        1 ||
                                                 _canGoToNext == false
                                             ? Colors.grey
                                             : Theme.of(context)
@@ -406,17 +283,13 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
                                     ),
                                     (_canGoToNext == false ||
                                             _currentPage !=
-                                                _testLetters.length - 1)
+                                                _practiceLetters.length - 1)
                                         ? (const Text(''))
                                         : ElevatedButton(
                                             onPressed: () {
-                                              if (_canGoToNext == false ||
-                                                  _currentPage !=
-                                                      _testLetters.length - 1) {
-                                                return;
-                                              } else {
-                                                _updateExerciseProgress();
-                                              }
+                                              setState(() {
+                                                _practiceComplete = true;
+                                              });
                                             },
                                             style: ButtonStyle(
                                               backgroundColor:
@@ -437,7 +310,7 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
                                             child: const Padding(
                                               padding: EdgeInsets.all(8),
                                               child: Text(
-                                                'مشق مکمل',
+                                                'تیاری مکمل',
                                                 style: TextStyle(
                                                   fontFamily:
                                                       'NastaliqKasheeda',
@@ -519,7 +392,7 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
                                 )
                               ],
                             ))
-                          : (ExerciseCompleteWidget(nextLessonSerialNo: 2))),
+                          : PracticeCompleteWidget()),
                 ))),
     );
   }

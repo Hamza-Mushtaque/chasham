@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-
 class DashboardScreen extends StatefulWidget {
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
@@ -29,9 +28,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   bool _isError = false;
   final GlobalKey<ScaffoldState> _scaffoldkey = new GlobalKey<ScaffoldState>();
 
-
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-
 
   BluetoothConnection? connection;
 
@@ -81,27 +78,23 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-
-
   void _receiveData() {
     if (connection != null) {
       connection!.input!.listen((Uint8List data) {
         String incomingMessage = utf8.decode(data);
         print("Received message: $incomingMessage");
         setState(() {
-         receiveText = incomingMessage;
+          receiveText = incomingMessage;
         });
         _showSnackBar("Message Received: $incomingMessage", true);
         // Do something with the incoming message...
-        if(receiveText.trim() == "NEXT".trim() ){
+        if (receiveText.trim() == "NEXT".trim()) {
           con_cancel();
           Navigator.pushNamed(context, '/lessons');
-        }
-        else if(receiveText.trim() == "PREVIOUS".trim()){
+        } else if (receiveText.trim() == "PREVIOUS".trim()) {
           con_cancel();
           Navigator.pushNamed(context, '/exercises');
         }
-
       }).onDone(() {
         print("Disconnected from device");
         // Do something when the device is disconnected...
@@ -117,7 +110,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> test_func(String data) async {
-    BL instan = BL(context: context,connection: connection);
+    BL instan = BL(context: context, connection: connection);
     await instan.sendData(data);
   }
 
@@ -203,55 +196,57 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Scaffold(
       key: _scaffoldkey,
       appBar: AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      centerTitle: true,
-      leading: IconButton(
-        icon: SvgPicture.asset(
-          'assets/svgs/logo-color.svg',
-          width: 48,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: SvgPicture.asset(
+            'assets/svgs/logo-color.svg',
+            width: 48,
+          ),
+          onPressed: () {},
         ),
-        onPressed: () {},
-      ),
-      title: Text(
-       " ڈیش بورڈ",
-        style: const TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
-          fontFamily: 'NastaliqKasheeda',
-        ),
-      ),
-      actions: [
-        IconButton(
-          onPressed: () {
-             _connectToBluetooth();
-          },
-          icon: Icon(
-            Icons.bluetooth,
-            color: Theme.of(context).colorScheme.primary,
-            size: 24,
+        title: Text(
+          " ڈیش بورڈ",
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+            fontFamily: 'NastaliqKasheeda',
           ),
         ),
-        IconButton(
-          onPressed:(){ handleDrawer();},
-          icon: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            child: Icon(
-              Icons.person,
+        actions: [
+          IconButton(
+            onPressed: () {
+              _connectToBluetooth();
+            },
+            icon: Icon(
+              Icons.bluetooth,
               color: Theme.of(context).colorScheme.primary,
               size: 24,
             ),
           ),
-        ),
-      ],
-    ),
+          IconButton(
+            onPressed: () {
+              handleDrawer();
+            },
+            icon: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              child: Icon(
+                Icons.person,
+                color: Theme.of(context).colorScheme.primary,
+                size: 24,
+              ),
+            ),
+          ),
+        ],
+      ),
       drawer: DrawerMain(),
       body: SafeArea(
           child: _loadingMsg == null
@@ -364,17 +359,18 @@ class _DashboardScreenState extends State<DashboardScreen>
                                     value:
                                         _userProgress!.lessonCompleted.length),
                                 ProgressDetailWidget(
-                                    iconPath: 'assets/svgs/test-icon.svg',
-                                    title: 'ٹیسٹ',
-                                    color: Colors.lightBlue,
-                                    value: _userProgress!
-                                        .exercisesCompleted.length),
-                                ProgressDetailWidget(
                                     iconPath: 'assets/svgs/exercise-icon.svg',
                                     title: 'مشق',
                                     color: Colors.green,
                                     value: _userProgress!
                                         .exercisesCompleted.length),
+                                const SizedBox(height: 4),
+                                Text(_userProgress!.rank.toUpperCase(),
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        fontSize: 18))
                               ],
                             ),
                           ),
@@ -382,20 +378,25 @@ class _DashboardScreenState extends State<DashboardScreen>
                           Center(
                             child: Wrap(
                               alignment: WrapAlignment.center,
-                              children:  [
+                              children: [
                                 ComponentBtnWidget(
-                                    label: 'سبق سیکھیں',
-                                    svgIconPath: 'assets/svgs/lesson-icon.svg',
-                                    link: '/lessons',
-                                    connection: connection,
-
-                                    ),
+                                  label: 'سبق سیکھیں',
+                                  svgIconPath: 'assets/svgs/lesson-icon.svg',
+                                  link: '/lessons',
+                                  connection: connection,
+                                ),
                                 ComponentBtnWidget(
-                                    label: 'مشق حل کریں',
-                                    svgIconPath: 'assets/svgs/test-icon.svg',
-                                    link: '/exercises',
-                                    connection: connection,
-                                    )
+                                  label: 'مشق حل کریں',
+                                  svgIconPath: 'assets/svgs/test-icon.svg',
+                                  link: '/exercises',
+                                  connection: connection,
+                                ),
+                                ComponentBtnWidget(
+                                  label: 'تیاری کریں',
+                                  svgIconPath: 'assets/svgs/exercise-icon.svg',
+                                  link: '/practice',
+                                  connection: connection,
+                                )
                               ],
                             ),
                           ),

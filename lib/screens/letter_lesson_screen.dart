@@ -39,9 +39,8 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
 
   BluetoothConnection? connection;
 
-    void _connectToBluetooth() async {
+  void _connectToBluetooth() async {
     try {
-
       if (selectedDevice != null) {
         // Connect to the selected device
         BluetoothConnection connection =
@@ -58,7 +57,7 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
       _showSnackBar("Error connecting to Bluetooth device: $exception", false);
     }
   }
-   
+
   void _receiveData() {
     if (connection != null) {
       connection!.input!.listen((Uint8List data) {
@@ -69,7 +68,6 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
         });
         _showSnackBar("Message Received: $incomingMessage", true);
         // Do something with the incoming message...
- 
       }).onDone(() {
         print("Disconnected from device");
         // Do something when the device is disconnected...
@@ -77,7 +75,7 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
     }
   }
 
-    void _showSnackBar(String message, bool success) {
+  void _showSnackBar(String message, bool success) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message),
       backgroundColor: success ? Colors.green : Colors.red,
@@ -85,15 +83,14 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
   }
 
   Future<void> test_func(String data) async {
-    BL instan = BL(context: context,connection: connection);
+    BL instan = BL(context: context, connection: connection);
     await instan.sendData(data);
-     print(connection);
+    print(connection);
   }
 
   Future<void> con_cancel() async {
     await connection!.finish();
   }
-  
 
   Future<void> _fetchCurrentLesson() async {
     if (widget.lessonSerial == null) {
@@ -121,6 +118,7 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
           _loadingMsg = null;
         });
         print(_currentLesson!.toJson());
+        // playAudio(_currentLesson!.letters[0].lessonAudioPath);
       } else {
         // Handle case where lesson with the given lessonId does not exist
         setState(() {

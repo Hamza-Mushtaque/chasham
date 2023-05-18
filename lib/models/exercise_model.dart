@@ -2,8 +2,10 @@ class ExerciseModel {
   String title;
   int serialNo;
   String description;
+  int firstLetter;
   int lastLetter;
   int noOfQs;
+  String exerciseAudioPath;
   final String exerciseType;
 
   ExerciseModel(
@@ -11,7 +13,9 @@ class ExerciseModel {
       required this.title,
       required this.description,
       required this.lastLetter,
+      required this.firstLetter,
       required this.noOfQs,
+      required this.exerciseAudioPath,
       required this.exerciseType});
 
   factory ExerciseModel.fromJson(Map<String, dynamic> json) {
@@ -20,7 +24,9 @@ class ExerciseModel {
         title: json['title'] as String,
         description: json['description'] as String,
         lastLetter: json['lastLetter'] as int,
+        firstLetter: json['firstLetter'] as int,
         noOfQs: json['noOfQs'] as int,
+        exerciseAudioPath: json['exerciseAudioPath'] as String,
         exerciseType: _validateType(json['exerciseType'] as String));
   }
 
@@ -30,8 +36,10 @@ class ExerciseModel {
       'title': title,
       'description': description,
       'lastLetter': lastLetter,
+      'firstLetter': firstLetter,
       'noOfQs': noOfQs,
-      'exerciseType': exerciseType
+      'exerciseType': exerciseType,
+      'exerciseAudioPath': exerciseAudioPath
     };
   }
 

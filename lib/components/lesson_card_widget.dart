@@ -22,8 +22,6 @@ class LessonCardWidget extends StatelessWidget {
     required this.connection,
   }) : super(key: key);
 
-
-
   Future<void> con_cancel() async {
     await connection!.finish();
   }
@@ -58,8 +56,8 @@ class LessonCardWidget extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text(
-                      'سبق نمبر 1',
+                    Text(
+                      title,
                       style: TextStyle(
                           fontSize: 20,
                           fontFamily: 'NastaliqKasheeda',

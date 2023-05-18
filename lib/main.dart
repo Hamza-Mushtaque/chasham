@@ -8,6 +8,7 @@ import 'package:chasham_fyp/screens/home_screen.dart';
 import 'package:chasham_fyp/screens/lessons_table_screen.dart';
 import 'package:chasham_fyp/screens/letter_exercise_screen.dart';
 import 'package:chasham_fyp/screens/letter_lesson_screen.dart';
+import 'package:chasham_fyp/screens/letter_practice_screen.dart';
 import 'package:chasham_fyp/screens/letters_upload_screen.dart';
 import 'package:chasham_fyp/screens/login_screen.dart';
 import 'package:chasham_fyp/screens/splash_screen.dart';
@@ -54,7 +55,7 @@ class MyApp extends StatelessWidget {
         '/exercise-create': (context) => CreateExercisePage(),
         '/lesson-create': (context) => CreateLessonScreen(),
         '/firsttimescreen': (context) => FirstTimeScreen(),
-
+        '/practice': (context) => LetterPracticeScreen()
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/lesson') {
