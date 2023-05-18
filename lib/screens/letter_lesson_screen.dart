@@ -72,28 +72,29 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
         // Do something with the incoming message...
 
           if(receiveText.trim() == "NEXT".trim() ){
-          if(_currentPage < (_currentLesson!.letters.length - 1)){
-              _handlePageChange(_currentPage+1);
-              _pageController.nextPage(
-              duration:
-                  const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-            );
-              
-          }
-          else if(_currentLesson == _currentLesson!.letters.length-1){
-            setState(() {
-              _lessonComplete = true;
-            });
-          }
-          else if(_lessonComplete == true){
-          con_cancel();
-          Navigator.pushReplacementNamed(context, '/lesson',
-          arguments: {'id': (_currentLesson!.serialNo + 1).toString()});
-          }
+            
+            if(_currentPage < (_currentLesson!.letters.length - 1)){
+                _handlePageChange(_currentPage+1);
+                _pageController.nextPage(
+                duration:
+                    const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+              );
+                
+            }
+            else if(_currentPage == (_currentLesson!.letters.length-1)){
+              setState(() {
+                _updateLessonProgress();
+              });
+            }
+            else if(_lessonComplete == true){
+              con_cancel();
+              Navigator.pushReplacementNamed(context, '/lesson',
+              arguments: {'id': (_currentLesson!.serialNo + 1).toString()});
+            }
         }
         else if(receiveText.trim() == "PREVIOUS".trim()){
-          if(_currentPage > 0){
+          if(_currentPage > 0 && !_lessonComplete){
             _handlePageChange(_currentPage-1);
             _pageController.previousPage(
               duration:
@@ -101,15 +102,24 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
               curve: Curves.easeInOut,
             );
           }
-        }
-        else if(_lessonComplete){
-         Navigator.pushReplacementNamed(context, '/exercises'); 
+          
+          else if(_lessonComplete){
+            con_cancel();
+            Navigator.pushReplacementNamed(context, '/exercises'); 
+          }
+
         }
         else{
 
           if(_lessonComplete){
             con_cancel();
             Navigator.pushReplacementNamed(context, '/dashboard');
+          }
+          else if (!_lessonBegan){
+            setState(() {
+              _lessonBegan = true;
+            });
+            _passLetterToDevice(0); 
           }
           else{
             playAudio(_currentLesson!.letters[_currentPage].lessonAudioPath);
@@ -215,6 +225,7 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
   }
 
   void _updateLessonProgress() async {
+    print("Inside Update func");
     try {
       setState(() {
         _loadingMsg = 'Updating Progress ... ';
