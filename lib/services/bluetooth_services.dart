@@ -6,6 +6,7 @@ import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 String receiveText = "";
 BluetoothDevice? selectedDevice;
 bool flag = false;
+bool blue_flag_dashboard = false;
 
 
 class BL{

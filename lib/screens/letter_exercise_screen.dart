@@ -73,6 +73,7 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
       }
     } catch (exception) {
       _showSnackBar("Error connecting to Bluetooth device: $exception", false);
+      _connectToBluetooth();
     }
   }
    
@@ -86,10 +87,37 @@ class _LetterExerciseScreenState extends State<LetterExerciseScreen> {
         });
         _showSnackBar("Message Received: $incomingMessage", true);
         // Do something with the incoming message...
-        if(flag){
-          con_cancel();
-          flag = false;
+
+        if(receiveText.trim() == "NEXT".trim() && _canGoToNext){
+          if(_currentPage < (_testLetters.length -1)){
+              _handlePageChange(_currentPage+1);
+              _pageController.nextPage(
+              duration:
+                  const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            );
+          }
+          else if(_currentPage == (_testLetters.length-1)){
+            setState(() {
+              _exerciseComplete = true;     
+            });
+            
+          }
+          else if(_exerciseComplete){
+            con_cancel();
+            Navigator.pushReplacementNamed(context, '/lesson',
+            arguments: {'id': (_currenExercise!.serialNo + 1).toString()});
+          }
         }
+        else if(receiveText.trim() == "PREVIOUS".trim() && _exerciseComplete){
+          con_cancel();
+          Navigator.pushReplacementNamed(context, '/exercises');
+        }
+        else if(_exerciseComplete){
+          con_cancel();
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        }
+
       }).onDone(() {
         print("Disconnected from device");
         // Do something when the device is disconnected...

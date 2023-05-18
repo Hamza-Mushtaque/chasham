@@ -56,6 +56,7 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
       }
     } catch (exception) {
       _showSnackBar("Error connecting to Bluetooth device: $exception", false);
+      _connectToBluetooth();
     }
   }
    
@@ -69,6 +70,51 @@ class _LetterLessonScreenState extends State<LetterLessonScreen> {
         });
         _showSnackBar("Message Received: $incomingMessage", true);
         // Do something with the incoming message...
+
+          if(receiveText.trim() == "NEXT".trim() ){
+          if(_currentPage < (_currentLesson!.letters.length - 1)){
+              _handlePageChange(_currentPage+1);
+              _pageController.nextPage(
+              duration:
+                  const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            );
+              
+          }
+          else if(_currentLesson == _currentLesson!.letters.length-1){
+            setState(() {
+              _lessonComplete = true;
+            });
+          }
+          else if(_lessonComplete == true){
+          con_cancel();
+          Navigator.pushReplacementNamed(context, '/lesson',
+          arguments: {'id': (_currentLesson!.serialNo + 1).toString()});
+          }
+        }
+        else if(receiveText.trim() == "PREVIOUS".trim()){
+          if(_currentPage > 0){
+            _handlePageChange(_currentPage-1);
+            _pageController.previousPage(
+              duration:
+                  const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            );
+          }
+        }
+        else if(_lessonComplete){
+         Navigator.pushReplacementNamed(context, '/exercises'); 
+        }
+        else{
+
+          if(_lessonComplete){
+            con_cancel();
+            Navigator.pushReplacementNamed(context, '/dashboard');
+          }
+          else{
+            playAudio(_currentLesson!.letters[_currentPage].lessonAudioPath);
+          }
+        }
  
       }).onDone(() {
         print("Disconnected from device");

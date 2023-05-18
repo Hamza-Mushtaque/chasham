@@ -35,6 +35,28 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   BluetoothConnection? connection;
 
+  void _autoConnectToBluetooth() async{
+    
+    try{
+      if (selectedDevice != null) {
+        // Connect to the selected device
+        BluetoothConnection connection =
+            await BluetoothConnection.toAddress(selectedDevice!.address);
+        setState(() {
+          this.connection = connection;
+        });
+        _showSnackBar("Connected to ${selectedDevice!.name}", true);
+        _receiveData();
+      } else {
+        _showSnackBar("No device selected", false);
+      }
+    } catch (exception) {
+      _showSnackBar("Error connecting to Bluetooth device: $exception", false);
+      _autoConnectToBluetooth();
+    }
+
+  }
+
   void _connectToBluetooth() async {
     try {
       // Get a list of all available Bluetooth devices
@@ -63,7 +85,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           );
         },
       );
-
+      flag = true;
       if (selectedDevice != null) {
         // Connect to the selected device
         BluetoothConnection connection =
@@ -78,6 +100,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       }
     } catch (exception) {
       _showSnackBar("Error connecting to Bluetooth device: $exception", false);
+      _connectToBluetooth();
     }
   }
 
@@ -137,6 +160,9 @@ class _DashboardScreenState extends State<DashboardScreen>
       begin: 0.0,
       end: progress,
     ).animate(_controller);
+    if(flag){
+      _autoConnectToBluetooth();
+    }
   }
 
   @override

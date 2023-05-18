@@ -39,6 +39,7 @@ class _ExerciseTableScreenState extends State<ExerciseTableScreen> {
       }
     } catch (exception) {
       _showSnackBar("Error connecting to Bluetooth device: $exception", false);
+      _connectToBluetooth();
     }
   }
    
