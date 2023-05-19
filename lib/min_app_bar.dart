@@ -13,6 +13,10 @@ class MinAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.connection,
   }) : super(key: key);
 
+  Future<void> con_cancel() async {
+    await connection!.finish();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppBar(
@@ -20,7 +24,7 @@ class MinAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios),
         onPressed: () { 
-          flag = true;
+          con_cancel();
           Navigator.of(context).pop();
         }
       ),

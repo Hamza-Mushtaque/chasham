@@ -24,11 +24,12 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
   late int _serialNo;
   File? _brailleImgFile;
   File? _titleImgFile;
+  File? _lessonAudioFile;
   List<int> _selectedSerialNos = [];
   List<LetterModel> _letters = [];
 
   // Example list of available serial numbers
-  final List<int> _availableSerialNos = [1, 2, 3, 4, 5, 6];
+  // final List<int> _availableSerialNos = [1, 2, 3, 4, 5, 6];
 
   Future<void> _handleBrailleImgFileSelection() async {
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
@@ -44,6 +45,15 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
     if (result != null) {
       setState(() {
         _titleImgFile = File(result.files.single.path!);
+      });
+    }
+  }
+
+  Future<void> _handleLessonAudioFileSelection() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.audio);
+    if (result != null) {
+      setState(() {
+        _lessonAudioFile = File(result.files.single.path!);
       });
     }
   }
@@ -72,6 +82,8 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
         brailleImg:
             _brailleImgFile != null ? await uploadFile(_brailleImgFile!) : "",
         letters: selectedLetters,
+        lessonAudioPath:
+            _lessonAudioFile != null ? await uploadFile(_lessonAudioFile!) : "",
       );
 
       try {
@@ -277,6 +289,31 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
                             ),
                           ],
                         ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Expanded(
+                              flex: 2,
+                              child: Text('Lesson Audio'),
+                            ),
+                            SizedBox(width: 16.0),
+                            Expanded(
+                              flex: 3,
+                              child: ElevatedButton(
+                                onPressed: _handleLessonAudioFileSelection,
+                                child: Text('Select File'),
+                              ),
+                            ),
+                            SizedBox(width: 16.0),
+                            Expanded(
+                              flex: 5,
+                              child: Text(
+                                _brailleImgFile?.path ?? 'No file selected',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 16),
                         Text('Select Serial Numbers for Letters'),
                         const SizedBox(height: 8),
@@ -290,7 +327,7 @@ class _CreateLessonScreenState extends State<CreateLessonScreen> {
                               onSelected: (selected) {
                                 setState(() {
                                   if (selected &&
-                                      _selectedSerialNos.length < 3) {
+                                      _selectedSerialNos.length < 4) {
                                     _selectedSerialNos.add(letter.serialNo);
                                   } else if (!selected) {
                                     _selectedSerialNos.remove(letter.serialNo);

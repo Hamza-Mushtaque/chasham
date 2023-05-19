@@ -13,6 +13,8 @@ class LetterUploadScreen extends StatefulWidget {
 
 class _LetterUploadScreenState extends State<LetterUploadScreen> {
   final _formKey = GlobalKey<FormState>();
+  String? _loadingMsg = null;
+  bool _isError = false;
   late int _serialNo;
   late String _letter;
   late String _braille;
@@ -51,6 +53,10 @@ class _LetterUploadScreenState extends State<LetterUploadScreen> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
+      setState(() {
+        _loadingMsg = 'Saving Letter ... ';
+      });
+
       final letterModel = LetterModel(
         serialNo: _serialNo,
         letter: _letter,
@@ -75,12 +81,19 @@ class _LetterUploadScreenState extends State<LetterUploadScreen> {
             style: TextStyle(color: Colors.green),
           )),
         );
+        setState(() {
+          _loadingMsg = null;
+        });
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text('Error uploading letter: $error',
                   style: TextStyle(color: Colors.red))),
         );
+        setState(() {
+          _loadingMsg = error.toString();
+          _isError = true;
+        });
       }
     }
   }
@@ -109,145 +122,168 @@ class _LetterUploadScreenState extends State<LetterUploadScreen> {
           title: Text('Letter Upload'),
         ),
         body: SingleChildScrollView(
-            child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Form(
-                    key: _formKey,
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          TextFormField(
-                            decoration:
-                                InputDecoration(labelText: 'Serial No.'),
-                            keyboardType: TextInputType.number,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a letter';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) {
-                              _serialNo = int.parse(value!);
-                            },
-                          ),
-                          SizedBox(height: 16.0),
-                          TextFormField(
-                            decoration: InputDecoration(labelText: 'Letter'),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a letter';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) {
-                              _letter = value!;
-                            },
-                          ),
-                          SizedBox(height: 16.0),
-                          TextFormField(
-                            decoration: InputDecoration(labelText: 'Braille'),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter braille';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) {
-                              _braille = value!;
-                            },
-                          ),
-                          SizedBox(height: 16.0),
-                          TextFormField(
-                            decoration:
-                                InputDecoration(labelText: 'Description'),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a description';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) {
-                              _description = value!;
-                            },
-                          ),
-                          SizedBox(height: 16.0),
-                          DropdownButtonFormField<String>(
-                            value: _selectedDropDownOption,
-                            decoration: const InputDecoration(
-                              labelText: 'Select letter type',
-                              hintText: 'Select letter type',
-                            ),
-                            items: _dropDownOptions
-                                .map((option) => DropdownMenuItem<String>(
-                                      value: option,
-                                      child: Text(option),
-                                    ))
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedDropDownOption = value!;
-                              });
-                            },
-                          ),
-                          SizedBox(height: 16.0),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+            child: _loadingMsg != null
+                ? (Container(
+                    child: Center(
+                        child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _isError == false
+                            ? const CircularProgressIndicator()
+                            : const SizedBox(
+                                height: 4,
+                              ),
+                        const SizedBox(
+                          height: 8,
+                        ),
+                        Text(_loadingMsg!)
+                      ],
+                    )),
+                  ))
+                : (Container(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Form(
+                        key: _formKey,
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Expanded(
-                                flex: 2,
-                                child: Text('Test Audio'),
+                              TextFormField(
+                                decoration:
+                                    InputDecoration(labelText: 'Serial No.'),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a letter';
+                                  }
+                                  return null;
+                                },
+                                onSaved: (value) {
+                                  _serialNo = int.parse(value!);
+                                },
                               ),
-                              SizedBox(width: 16.0),
-                              Expanded(
-                                flex: 3,
-                                child: ElevatedButton(
-                                  onPressed: _handleTestAudioFileSelection,
-                                  child: Text('Select File'),
+                              SizedBox(height: 16.0),
+                              TextFormField(
+                                decoration:
+                                    InputDecoration(labelText: 'Letter'),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a letter';
+                                  }
+                                  return null;
+                                },
+                                onSaved: (value) {
+                                  _letter = value!;
+                                },
+                              ),
+                              SizedBox(height: 16.0),
+                              TextFormField(
+                                decoration:
+                                    InputDecoration(labelText: 'Braille'),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter braille';
+                                  }
+                                  return null;
+                                },
+                                onSaved: (value) {
+                                  _braille = value!;
+                                },
+                              ),
+                              SizedBox(height: 16.0),
+                              TextFormField(
+                                decoration:
+                                    InputDecoration(labelText: 'Description'),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a description';
+                                  }
+                                  return null;
+                                },
+                                onSaved: (value) {
+                                  _description = value!;
+                                },
+                              ),
+                              SizedBox(height: 16.0),
+                              DropdownButtonFormField<String>(
+                                value: _selectedDropDownOption,
+                                decoration: const InputDecoration(
+                                  labelText: 'Select letter type',
+                                  hintText: 'Select letter type',
                                 ),
+                                items: _dropDownOptions
+                                    .map((option) => DropdownMenuItem<String>(
+                                          value: option,
+                                          child: Text(option),
+                                        ))
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedDropDownOption = value!;
+                                  });
+                                },
                               ),
-                              SizedBox(width: 16.0),
-                              Expanded(
-                                flex: 5,
-                                child: Text(
-                                  _testAudioFile?.path ?? 'No file selected',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                              SizedBox(height: 16.0),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    flex: 2,
+                                    child: Text('Test Audio'),
+                                  ),
+                                  SizedBox(width: 16.0),
+                                  Expanded(
+                                    flex: 3,
+                                    child: ElevatedButton(
+                                      onPressed: _handleTestAudioFileSelection,
+                                      child: Text('Select File'),
+                                    ),
+                                  ),
+                                  SizedBox(width: 16.0),
+                                  Expanded(
+                                    flex: 5,
+                                    child: Text(
+                                      _testAudioFile?.path ??
+                                          'No file selected',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 16.0),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: Text('Lesson Audio'),
+                              SizedBox(height: 16.0),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    flex: 2,
+                                    child: Text('Lesson Audio'),
+                                  ),
+                                  SizedBox(width: 16.0),
+                                  Expanded(
+                                    flex: 3,
+                                    child: ElevatedButton(
+                                      onPressed:
+                                          _handleLessonAudioFileSelection,
+                                      child: Text('Select File'),
+                                    ),
+                                  ),
+                                  SizedBox(width: 16.0),
+                                  Expanded(
+                                    flex: 5,
+                                    child: Text(
+                                      _lessonAudioFile?.path ??
+                                          'No file selected',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(width: 16.0),
-                              Expanded(
-                                flex: 3,
-                                child: ElevatedButton(
-                                  onPressed: _handleLessonAudioFileSelection,
-                                  child: Text('Select File'),
-                                ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  _onFormSubmitted();
+                                },
+                                child: const Text('Submit'),
                               ),
-                              SizedBox(width: 16.0),
-                              Expanded(
-                                flex: 5,
-                                child: Text(
-                                  _lessonAudioFile?.path ?? 'No file selected',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              _onFormSubmitted();
-                            },
-                            child: const Text('Submit'),
-                          ),
-                        ])))));
+                            ]))))));
   }
 }

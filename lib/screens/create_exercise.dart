@@ -1,3 +1,7 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart' as path;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:chasham_fyp/models/exercise_model.dart';
@@ -14,7 +18,9 @@ class _CreateExercisePageState extends State<CreateExercisePage> {
   int _serialNo = 0;
   String _description = '';
   int _lastLetter = 0;
+  int _firstLetter = 0;
   int _noOfQs = 0;
+  File? _exerciseAudioFile;
   late String _selectedDropDownOption;
 
   final List<String> _dropDownOptions = ['Normal', 'Advanced'];
@@ -42,8 +48,12 @@ class _CreateExercisePageState extends State<CreateExercisePage> {
           serialNo: _serialNo,
           title: _title,
           description: _description,
+          firstLetter: _firstLetter,
           lastLetter: _lastLetter,
           noOfQs: _noOfQs,
+          exerciseAudioPath: _exerciseAudioFile != null
+              ? await uploadFile(_exerciseAudioFile!)
+              : "",
           exerciseType: _selectedDropDownOption,
         );
 
@@ -79,6 +89,32 @@ class _CreateExercisePageState extends State<CreateExercisePage> {
           _isError = true;
         });
       }
+    }
+  }
+
+  Future<void> _handleExerciseAudioFileSelection() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.audio);
+    if (result != null) {
+      setState(() {
+        _exerciseAudioFile = File(result.files.single.path!);
+      });
+    }
+  }
+
+  Future<String> uploadFile(File file) async {
+    try {
+      String fileName = path.basename(file.path);
+      Reference ref =
+          FirebaseStorage.instance.ref().child("exercises/$fileName");
+      UploadTask uploadTask = ref.putFile(file);
+      TaskSnapshot taskSnapshot = await uploadTask;
+      return await taskSnapshot.ref.getDownloadURL();
+    } catch (e) {
+      print(e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error uploading letter: $e')),
+      );
+      throw Exception('Failed to upload file.');
     }
   }
 
@@ -172,6 +208,24 @@ class _CreateExercisePageState extends State<CreateExercisePage> {
                               const SizedBox(height: 10),
                               TextFormField(
                                 decoration: const InputDecoration(
+                                  labelText: 'First Letter',
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter the first letter';
+                                  }
+                                  if (int.tryParse(value) == null) {
+                                    return 'Please enter a valid First letter';
+                                  }
+                                  return null;
+                                },
+                                onSaved: (value) {
+                                  _firstLetter = int.parse(value!);
+                                },
+                              ),
+                              const SizedBox(height: 10),
+                              TextFormField(
+                                decoration: const InputDecoration(
                                   labelText: 'Last Letter',
                                 ),
                                 validator: (value) {
@@ -187,6 +241,35 @@ class _CreateExercisePageState extends State<CreateExercisePage> {
                                   _lastLetter = int.parse(value!);
                                 },
                               ),
+                              const SizedBox(height: 16),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Expanded(
+                                    flex: 2,
+                                    child: Text('Exercise Audio'),
+                                  ),
+                                  SizedBox(width: 16.0),
+                                  Expanded(
+                                    flex: 3,
+                                    child: ElevatedButton(
+                                      onPressed:
+                                          _handleExerciseAudioFileSelection,
+                                      child: Text('Select File'),
+                                    ),
+                                  ),
+                                  SizedBox(width: 16.0),
+                                  Expanded(
+                                    flex: 5,
+                                    child: Text(
+                                      _exerciseAudioFile?.path ??
+                                          'No file selected',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
                               DropdownButtonFormField<String>(
                                 value: _selectedDropDownOption,
                                 decoration: const InputDecoration(

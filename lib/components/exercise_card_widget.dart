@@ -8,18 +8,16 @@ class ExerciseCardWidget extends StatelessWidget {
   final BluetoothConnection? connection;
   final bool isActive;
 
-  ExerciseCardWidget({
-    required this.title,
-    required this.description,
-    required this.serialNo,
-    required this.connection,
-    required this.isActive
-  });
+  ExerciseCardWidget(
+      {required this.title,
+      required this.description,
+      required this.serialNo,
+      required this.connection,
+      required this.isActive});
 
   Future<void> con_cancel() async {
     await connection!.finish();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +34,8 @@ class ExerciseCardWidget extends StatelessWidget {
         width: double.infinity,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.0),
-          color: isActive? Theme.of(context).colorScheme.secondary : Colors.white,
+          color:
+              isActive ? Theme.of(context).colorScheme.secondary : Colors.white,
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.5),
@@ -51,20 +50,26 @@ class ExerciseCardWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
+              SizedBox(
+                width: double.infinity,
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'NastaliqKasheeda'),
                 ),
               ),
               SizedBox(height: 8.0),
-              Text(
-                description,
-                style: TextStyle(
-                  fontSize: 14.0,
+              SizedBox(
+                width: double.infinity,
+                child: Text(
+                  description,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14.0, fontFamily: 'NooriNastaliq'),
                 ),
-              ),
+              )
             ],
           ),
         ),

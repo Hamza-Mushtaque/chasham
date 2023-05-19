@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:just_audio/just_audio.dart';
 
 class ExerciseTableScreen extends StatefulWidget {
   @override
@@ -19,6 +20,7 @@ class _ExerciseTableScreenState extends State<ExerciseTableScreen> {
   List<ExerciseModel> availableExercises = [];
   List<int> completedLessons = [];
   int _currentIndex = 0;
+  final player = AudioPlayer();
 
    BluetoothConnection? connection;
 
@@ -144,12 +146,20 @@ class _ExerciseTableScreenState extends State<ExerciseTableScreen> {
     }
   }
 
-  
+   void playAudio(String lessonAudioPath) async {
+    print('PLAYING ');
+    // final duration = await player.setAsset(
+    //     'assets/audios/letter-1.wav');
+    final duration = await player.setUrl(lessonAudioPath);
+    await player.play();
+    print('DONE');
+  }
+
   void _handlePageChange(int index) {
     setState(() {
       _currentIndex = index;
     });
-    // playAudio();
+    playAudio(availableExercises[_currentIndex].exerciseAudioPath);
   }
 
   @override

@@ -54,6 +54,11 @@ flutter:
     - assets/svgs/lesson-icon.svg
     - assets/svgs/logo-color.svg
     - assets/svgs/test-icon.svg
+    - assets/audios/correct-answer.wav
+    - assets/audios/lesson-complete.wav
+    - assets/audios/letter-1.wav
+    - assets/audios/letter-2.wav
+    - assets/audios/wrong-answer.wav
 
 
   fonts:

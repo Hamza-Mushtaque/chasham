@@ -7,6 +7,7 @@ class LessonModel {
   String letterImg;
   String brailleImg;
   List<LetterModel> letters;
+  String lessonAudioPath;
   String? lessonId;
 
   LessonModel(
@@ -16,6 +17,7 @@ class LessonModel {
       required this.letterImg,
       required this.brailleImg,
       required this.letters,
+      required this.lessonAudioPath,
       lessonId});
 
   factory LessonModel.fromJson(Map<String, dynamic> json) {
@@ -28,7 +30,8 @@ class LessonModel {
         letters: (json['letters'] as List<dynamic>)
             .map((letterJson) => LetterModel.fromJson(letterJson))
             .toList(),
-        lessonId: json['lessonId']);
+        lessonId: json['lessonId'],
+        lessonAudioPath: json['lessonAudioPath']);
   }
 
   Map<String, dynamic> toJson() {
@@ -39,6 +42,7 @@ class LessonModel {
       'letterImg': letterImg,
       'brailleImg': brailleImg,
       'letters': letters.map((letter) => letter.toJson()).toList(),
+      'lessonAudioPath': lessonAudioPath
     };
   }
 }
