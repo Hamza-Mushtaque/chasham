@@ -53,7 +53,8 @@ class _LetterPracticeScreenState extends State<LetterPracticeScreen> {
         _showSnackBar("No device selected", false);
       }
     } catch (exception) {
-      _showSnackBar("Error connecting to Bluetooth device: $exception", false);
+      // _showSnackBar("Error connecting to Bluetooth device: $exception", false);
+      _connectToBluetooth();
     }
   }
 
